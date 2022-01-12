@@ -17,6 +17,8 @@ export default class WebGPU
 			{
 				super(addr_renderer);
 
+				this.exists = true;
+
 
 
 				/* eslint-disable-next-line consistent-this */
@@ -29,7 +31,21 @@ export default class WebGPU
 				this.canvas.width = this.original_struct.width;
 				this.canvas.height = this.original_struct.height;
 
+				this.canvas.style.width = `${ this.original_struct.width }px`;
+				this.canvas.style.height = `${ this.original_struct.height }px`;
+
 				this._context = this.canvas.getContext('webgpu');
+
+				if (!this._context || !window.navigator.gpu)
+				{
+					this.exists = false;
+
+					return undefined;
+				}
+
+
+
+				this.loop_function = null;
 
 
 
@@ -468,6 +484,23 @@ export default class WebGPU
 					},
 					// size: [ 800, 600 ],
 				});
+			}
+
+			startLoop ()
+			{
+				this.loop_function_wrapper = () =>
+				{
+					this.loop_function();
+
+					this.animation_frame = requestAnimationFrame(this.loop_function_wrapper);
+				};
+
+				this.animation_frame = requestAnimationFrame(this.loop_function_wrapper);
+			}
+
+			endLoop ()
+			{
+				cancelAnimationFrame(this.animation_frame);
 			}
 		}
 

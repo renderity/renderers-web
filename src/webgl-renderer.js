@@ -18,6 +18,8 @@ export default class WebGL
 			{
 				super(addr_renderer);
 
+				this.exists = true;
+
 
 
 				/* eslint-disable-next-line consistent-this */
@@ -30,7 +32,21 @@ export default class WebGL
 				this.canvas.width = this.original_struct.width;
 				this.canvas.height = this.original_struct.height;
 
+				this.canvas.style.width = `${ this.original_struct.width }px`;
+				this.canvas.style.height = `${ this.original_struct.height }px`;
+
 				this._context = this.canvas.getContext(_context);
+
+				if (!this._context)
+				{
+					this.exists = false;
+
+					return undefined;
+				}
+
+
+
+				this.loop_function = null;
 
 
 
@@ -230,7 +246,7 @@ export default class WebGL
 
 											// uniform.update();
 
-											this.uniform_dict[uniform.name] = uniform;
+											this.uniforms_dict[uniform.name] = uniform;
 
 											return uniform;
 										}
@@ -319,24 +335,21 @@ export default class WebGL
 				this.Scene = Scene;
 			}
 
-			render ()
+			startLoop ()
 			{
-				this.context.bindBuffer(this.vertex_buffer);
-				this.context.bindBuffer(this.vindex_buffer);
-
-				for (let i = 0; i < this.material_count; ++i)
+				this.loop_function_wrapper = () =>
 				{
-					const material = this.materials[i];
+					this.loop_function();
 
-					material.use();
+					this.animation_frame = requestAnimationFrame(this.loop_function_wrapper);
+				};
 
-					for (let k = 0; k < material.object_count; ++k)
-					{
-						const _object = material.objects[i];
+				this.animation_frame = requestAnimationFrame(this.loop_function_wrapper);
+			}
 
-						_object.draw();
-					}
-				}
+			endLoop ()
+			{
+				cancelAnimationFrame(this.animation_frame);
 			}
 		}
 
