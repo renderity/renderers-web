@@ -45,7 +45,12 @@ export default class WebGPU
 
 
 
+				this.gpu_resources = [];
+
+
+
 				this.loop_function = null;
+				this.loop_function_wrapper = null;
 
 
 
@@ -91,6 +96,8 @@ export default class WebGPU
 									// window.GPUBufferUsage.MAP_WRITE
 								),
 							});
+
+						renderer.gpu_resources.push(this.buffer);
 
 						// this.buffer.mapAsync(window.GPUMapMode.WRITE);
 
@@ -501,6 +508,27 @@ export default class WebGPU
 			endLoop ()
 			{
 				cancelAnimationFrame(this.animation_frame);
+			}
+
+			destroy ()
+			{
+				this.loop_function = null;
+				this.loop_function_wrapper = null;
+
+				this.gpu_resources
+					.reverse()
+					.forEach
+					(
+						(handle) =>
+						{
+							handle.destroy();
+						},
+					);
+
+				this.Uniform.instances = null;
+				this.UniformBlock.instances = null;
+				this.DescriptorSet.instances = null;
+				this.Material.instances = null;
 			}
 		}
 

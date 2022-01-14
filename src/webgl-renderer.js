@@ -46,7 +46,12 @@ export default class WebGL
 
 
 
+				this.gpu_resources = [];
+
+
+
 				this.loop_function = null;
+				this.loop_function_wrapper = null;
 
 
 
@@ -86,6 +91,8 @@ export default class WebGL
 						this.getUniforms(renderer);
 
 						this.buffer = gl.createBuffer();
+
+						renderer.gpu_resources.push([ 'deleteBuffer', this.buffer ]);
 
 						gl.bindBuffer(gl.UNIFORM_BUFFER, this.buffer);
 						gl.bindBufferBase(gl.UNIFORM_BUFFER, this.binding, this.buffer);
@@ -149,6 +156,8 @@ export default class WebGL
 
 						this.program = gl.createProgram();
 
+						renderer.gpu_resources.push([ 'deleteProgram', this.program ]);
+
 
 
 						// vertex
@@ -167,6 +176,8 @@ export default class WebGL
 							}
 
 							const shader = gl.createShader(gl.VERTEX_SHADER);
+
+							renderer.gpu_resources.push([ 'deleteShader', shader ]);
 
 							gl.shaderSource(shader, code);
 
@@ -201,6 +212,8 @@ export default class WebGL
 							}
 
 							const shader = gl.createShader(gl.FRAGMENT_SHADER);
+
+							renderer.gpu_resources.push([ 'deleteShader', shader ]);
 
 							gl.shaderSource(shader, code);
 
@@ -335,6 +348,7 @@ export default class WebGL
 				this.Scene = Scene;
 			}
 
+			// Generic methods for all renderers. TODO: share by using base class.
 			startLoop ()
 			{
 				this.loop_function_wrapper = () =>
@@ -350,6 +364,28 @@ export default class WebGL
 			endLoop ()
 			{
 				cancelAnimationFrame(this.animation_frame);
+			}
+
+			destroy ()
+			{
+				this.loop_function = null;
+				this.loop_function_wrapper = null;
+
+				this.gpu_resources
+					.reverse()
+					.forEach
+					(
+						(resource) =>
+						{
+							const [ delete_function_name, handle ] = resource;
+
+							this._context[delete_function_name](handle);
+						},
+					);
+
+				this.Uniform.instances = null;
+				this.UniformBlock.instances = null;
+				this.Material.instances = null;
 			}
 		}
 
