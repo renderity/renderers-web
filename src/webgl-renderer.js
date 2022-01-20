@@ -1,3 +1,11 @@
+/*
+eslint-disable
+
+no-undefined,
+*/
+
+
+
 // import Base from './base';
 
 
@@ -141,11 +149,43 @@ export default class WebGL
 							gl.CW,
 						];
 
+					static BLEND_ENABLED =
+						[
+							false,
+							true,
+						];
+
+					static BLEND_FACTOR =
+						[
+							gl.ZERO,
+							gl.ONE,
+						];
+
+					static BLEND_OP =
+						[
+							gl.FUNC_ADD,
+							gl.FUNC_SUBTRACT,
+							gl.FUNC_REVERSE_SUBTRACT,
+							gl.MIN || this.extensions?.EXT_blend_minmax?.MIN_EXT || null,
+							gl.MAX || this.extensions?.EXT_blend_minmax?.MAX_EXT || null,
+						];
+
 
 
 					constructor (addr)
 					{
 						super(addr);
+
+
+
+						if
+						(
+							this.original_struct.blend_color_op === null ||
+							this.original_struct.blend_alpha_op === null
+						)
+						{
+							// LOG('Enable "EXT_blend_minmax" extension!');
+						}
 
 
 
@@ -301,8 +341,27 @@ export default class WebGL
 					{
 						Material.used_instance = this;
 
-						gl.frontFace(this.front_face);
 						gl.useProgram(this.program);
+
+						gl.frontFace(this.front_face);
+
+						if (this.blend_enabled)
+						{
+							gl.enable(gl.BLEND);
+							gl.blendEquationSeparate(this.blend_color_op, this.blend_alpha_op);
+
+							gl.blendFuncSeparate
+							(
+								this.blend_color_factor_src,
+								this.blend_color_factor_dst,
+								this.blend_alpha_factor_src,
+								this.blend_alpha_factor_dst,
+							);
+						}
+						else
+						{
+							gl.disable(gl.BLEND);
+						}
 
 						this.uniforms_seq.forEach((uniform) => uniform.update());
 					}

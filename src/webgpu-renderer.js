@@ -1,3 +1,11 @@
+/*
+eslint-disable
+
+no-undefined,
+*/
+
+
+
 import glslang from '@webgpu/glslang/dist/web-devel-onefile/glslang.js';
 
 
@@ -36,7 +44,7 @@ export default class WebGPU
 
 				this._context = this.canvas.getContext('webgpu');
 
-				if (!this._context || !window.navigator.gpu)
+				if (!this._context || !global.navigator.gpu)
 				{
 					this.exists = false;
 
@@ -90,16 +98,16 @@ export default class WebGPU
 
 								usage:
 								(
-									window.GPUBufferUsage.COPY_DST |
-									window.GPUBufferUsage.UNIFORM
-									// window.GPUBufferUsage.COPY_SRC |
-									// window.GPUBufferUsage.MAP_WRITE
+									global.GPUBufferUsage.COPY_DST |
+									global.GPUBufferUsage.UNIFORM
+									// global.GPUBufferUsage.COPY_SRC |
+									// global.GPUBufferUsage.MAP_WRITE
 								),
 							});
 
 						renderer.gpu_resources.push(this.buffer);
 
-						// this.buffer.mapAsync(window.GPUMapMode.WRITE);
+						// this.buffer.mapAsync(global.GPUMapMode.WRITE);
 
 						this.entry =
 						{
@@ -119,7 +127,7 @@ export default class WebGPU
 							binding: this.binding,
 
 							// !
-							visibility: window.GPUShaderStage.VERTEX,
+							visibility: global.GPUShaderStage.VERTEX,
 
 							buffer:
 							{
@@ -254,6 +262,27 @@ export default class WebGPU
 							'cw',
 						];
 
+					static BLEND_ENABLED =
+						[
+							false,
+							true,
+						];
+
+					static BLEND_FACTOR =
+						[
+							'zero',
+							'one',
+						];
+
+					static BLEND_OP =
+						[
+							'add',
+							'subtract',
+							'reverse-subtract',
+							'min',
+							'max',
+						];
+
 					static ShaderUsage =
 						{
 							SPIRV: 0,
@@ -318,6 +347,31 @@ export default class WebGPU
 								[
 									{
 										format: renderer.render_format,
+
+										blend:
+										(
+											this.blend_enabled ?
+
+												{
+													color:
+													{
+														operation: this.blend_color_op,
+														srcFactor: this.blend_color_factor_src,
+														dstFactor: this.blend_color_factor_dst,
+													},
+
+													alpha:
+													{
+														operation: this.blend_alpha_op,
+														srcFactor: this.blend_alpha_factor_src,
+														dstFactor: this.blend_alpha_factor_dst,
+													},
+												} :
+
+												undefined
+										),
+
+										// GPUColorWriteFlags writeMask = 0xF;  // GPUColorWrite.ALL
 									},
 								],
 							},
@@ -466,7 +520,17 @@ export default class WebGPU
 			{
 				this.glslang = await glslang();
 
+				if (!navigator.gpu)
+				{
+					return null;
+				}
+
 				this.adapter = await navigator.gpu.requestAdapter();
+
+				if (!this.adapter)
+				{
+					return null;
+				}
 
 				this.device = await this.adapter.requestDevice();
 
@@ -479,7 +543,7 @@ export default class WebGPU
 				({
 					device: this.device,
 					format: this.render_format,
-					usage: window.GPUTextureUsage.RENDER_ATTACHMENT,
+					usage: global.GPUTextureUsage.RENDER_ATTACHMENT,
 					// GPUPredefinedColorSpace colorSpace = "srgb";
 					// GPUCanvasCompositingAlphaMode compositingAlphaMode = "opaque";
 
@@ -491,6 +555,8 @@ export default class WebGPU
 					},
 					// size: [ 800, 600 ],
 				});
+
+				return this.adapter;
 			}
 
 			startLoop ()

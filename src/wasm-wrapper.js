@@ -668,6 +668,13 @@ export default class WasmWrapper
 					{
 						topology: 'SizeT',
 						front_face: 'SizeT',
+						blend_enabled: 'SizeT',
+						blend_color_op: 'SizeT',
+						blend_color_factor_src: 'SizeT',
+						blend_color_factor_dst: 'SizeT',
+						blend_alpha_op: 'SizeT',
+						blend_alpha_factor_src: 'SizeT',
+						blend_alpha_factor_dst: 'SizeT',
 						glsl100es_code_vertex: 'StdString',
 						glsl100es_code_fragment: 'StdString',
 						glsl300es_code_vertex: 'StdString',
@@ -708,7 +715,18 @@ export default class WasmWrapper
 
 
 					this.topology = this.constructor.TOPOLOGY[this.original_struct.topology];
+
 					this.front_face = this.constructor.FRONT_FACE[this.original_struct.front_face];
+
+					this.blend_enabled = this.constructor.BLEND_ENABLED[this.original_struct.blend_enabled];
+
+					this.blend_color_op = this.constructor.BLEND_OP[this.original_struct.blend_color_op];
+					this.blend_color_factor_src = this.constructor.BLEND_FACTOR[this.original_struct.blend_color_factor_src];
+					this.blend_color_factor_dst = this.constructor.BLEND_FACTOR[this.original_struct.blend_color_factor_dst];
+
+					this.blend_alpha_op = this.constructor.BLEND_OP[this.original_struct.blend_alpha_op];
+					this.blend_alpha_factor_src = this.constructor.BLEND_FACTOR[this.original_struct.blend_alpha_factor_src];
+					this.blend_alpha_factor_dst = this.constructor.BLEND_FACTOR[this.original_struct.blend_alpha_factor_dst];
 
 					// this.uniforms
 					// this.uniform_blocks
