@@ -45,6 +45,7 @@ export default class WasmWrapper
 	/* eslint-enable no-magic-numbers */
 
 	static text_decoder = new TextDecoder('utf-8');
+	static text_encoder = new TextEncoder();
 
 	// static uint8Array2DomString (uint8_array)
 	// {
@@ -56,6 +57,11 @@ export default class WasmWrapper
 	static uint8Array2DomString (uint8_array)
 	{
 		return WasmWrapper.text_decoder.decode(uint8_array.slice());
+	}
+
+	static DomString2Uint8Array (text)
+	{
+		return WasmWrapper.text_encoder.encode(text);
 	}
 
 	constructor ()
@@ -393,34 +399,81 @@ export default class WasmWrapper
 
 		if (declareRsWrappersClasses)
 		{
-			// Slow block. TODO: find better approach.
-			const mangled_names =
+			// Why not working in workers?
+			// const demangle = (mangled_name) =>
+			// {
+			// 	const mangled_name_length = mangled_name.length;
+			// 	const mangled_name_addr = this.exports.RDTY_RENDERERS_WEB_AUX_malloc(mangled_name_length);
+
+			// 	this.memory_views.UI8.set(WasmWrapper.DomString2Uint8Array(mangled_name), mangled_name_addr);
+
+			// 	const demangled_name =
+			// 		WasmWrapper.uint8Array2DomString
+			// 		(this.Charv(this.exports.RDTY_RENDERERS_WEB_AUX_demangleCxxName(mangled_name_addr)));
+
+			// 	this.exports.RDTY_RENDERERS_WEB_AUX_free(mangled_name_addr);
+
+			// 	return demangled_name;
+			// };
+
+			const demangle = (mangled_name, mangled_name_addr) =>
 			{
-				renderer_offsets: null,
-				uniform_offsets: null,
-				uniform_block_offsets: null,
-				descriptor_set_offsets: null,
-				material_offsets: null,
+				this.memory_views.UI8.set(WasmWrapper.DomString2Uint8Array(mangled_name), mangled_name_addr);
+
+				const demangled_name =
+					WasmWrapper.uint8Array2DomString
+					(this.Charv(this.exports.RDTY_RENDERERS_WEB_AUX_demangleCxxName(mangled_name_addr)))
+						.replace(/, /g, ',');
+
+				return demangled_name;
 			};
 
+
+
 			{
-				const non_mangled_name_list = Object.keys(mangled_names);
+				const demangled_name_max_length = 1024;
+				const demangled_name_addr = this.exports.RDTY_RENDERERS_WEB_AUX_malloc(demangled_name_max_length);
 
-				Object.keys(this.exports).forEach
-				(
-					(name) =>
-					{
-						for (let i = 0; i < non_mangled_name_list.length; ++i)
-						{
-							if (name.includes(non_mangled_name_list[i]))
+				this.exports_demangled =
+					Object.keys(this.exports)
+						.reduce
+						(
+							(exports_demangled, _name) =>
 							{
-								mangled_names[non_mangled_name_list[i]] = name;
+								if (_name.startsWith('_Z'))
+								{
+									const name = `${ _name }\0`;
 
-								break;
-							}
-						}
-					},
-				);
+									const demangled_name = demangle(name, demangled_name_addr);
+
+									if (exports_demangled[demangled_name])
+									{
+										if (Array.isArray(exports_demangled[demangled_name]))
+										{
+											exports_demangled[demangled_name].push(this.exports[_name]);
+
+											return exports_demangled;
+										}
+
+										const first_entry = exports_demangled[demangled_name];
+
+										exports_demangled[demangled_name] = [ first_entry, this.exports[_name] ];
+
+										return exports_demangled;
+									}
+
+									exports_demangled[demangled_name] = this.exports[_name];
+								}
+
+								return exports_demangled;
+							},
+
+							{},
+						);
+
+				this.exports.RDTY_RENDERERS_WEB_AUX_free(demangled_name_addr);
+
+				LOG(this.exports_demangled)
 			}
 
 
@@ -491,8 +544,7 @@ export default class WasmWrapper
 				static original_struct_offsets =
 					wasm_wrapper.SizeTv
 					(
-						// wasm_wrapper.exports._ZN4RDTY8WRAPPERS16renderer_offsetsE,
-						wasm_wrapper.exports[mangled_names.renderer_offsets],
+						wasm_wrapper.exports_demangled['RDTY::WRAPPERS::renderer_offsets'],
 						Object.keys(this.original_struct_descriptor).length,
 					);
 
@@ -529,8 +581,7 @@ export default class WasmWrapper
 				static original_struct_offsets =
 					wasm_wrapper.SizeTv
 					(
-						// wasm_wrapper.exports._ZN4RDTY8WRAPPERS15uniform_offsetsE,
-						wasm_wrapper.exports[mangled_names.uniform_offsets],
+						wasm_wrapper.exports_demangled['RDTY::WRAPPERS::uniform_offsets'],
 						Object.keys(this.original_struct_descriptor).length,
 					);
 
@@ -574,8 +625,7 @@ export default class WasmWrapper
 				static original_struct_offsets =
 					wasm_wrapper.SizeTv
 					(
-						// wasm_wrapper.exports._ZN4RDTY8WRAPPERS21uniform_block_offsetsE,
-						wasm_wrapper.exports[mangled_names.uniform_block_offsets],
+						wasm_wrapper.exports_demangled['RDTY::WRAPPERS::uniform_block_offsets'],
 						Object.keys(this.original_struct_descriptor).length,
 					);
 
@@ -639,8 +689,7 @@ export default class WasmWrapper
 				static original_struct_offsets =
 					wasm_wrapper.SizeTv
 					(
-						// wasm_wrapper.exports._ZN4RDTY8WRAPPERS22descriptor_set_offsetsE,
-						wasm_wrapper.exports[mangled_names.descriptor_set_offsets],
+						wasm_wrapper.exports_demangled['RDTY::WRAPPERS::descriptor_set_offsets'],
 						Object.keys(this.original_struct_descriptor).length,
 					);
 
@@ -695,8 +744,7 @@ export default class WasmWrapper
 				static original_struct_offsets =
 					wasm_wrapper.SizeTv
 					(
-						// wasm_wrapper.exports._ZN4RDTY8WRAPPERS16material_offsetsE,
-						wasm_wrapper.exports[mangled_names.material_offsets],
+						wasm_wrapper.exports_demangled['RDTY::WRAPPERS::material_offsets'],
 						Object.keys(this.original_struct_descriptor).length,
 					);
 
@@ -720,13 +768,23 @@ export default class WasmWrapper
 
 					this.blend_enabled = this.constructor.BLEND_ENABLED[this.original_struct.blend_enabled];
 
-					this.blend_color_op = this.constructor.BLEND_OP[this.original_struct.blend_color_op];
-					this.blend_color_factor_src = this.constructor.BLEND_FACTOR[this.original_struct.blend_color_factor_src];
-					this.blend_color_factor_dst = this.constructor.BLEND_FACTOR[this.original_struct.blend_color_factor_dst];
+					this.blend_color_op =
+						this.constructor.BLEND_OP[this.original_struct.blend_color_op];
 
-					this.blend_alpha_op = this.constructor.BLEND_OP[this.original_struct.blend_alpha_op];
-					this.blend_alpha_factor_src = this.constructor.BLEND_FACTOR[this.original_struct.blend_alpha_factor_src];
-					this.blend_alpha_factor_dst = this.constructor.BLEND_FACTOR[this.original_struct.blend_alpha_factor_dst];
+					this.blend_color_factor_src =
+						this.constructor.BLEND_FACTOR[this.original_struct.blend_color_factor_src];
+
+					this.blend_color_factor_dst =
+						this.constructor.BLEND_FACTOR[this.original_struct.blend_color_factor_dst];
+
+					this.blend_alpha_op =
+						this.constructor.BLEND_OP[this.original_struct.blend_alpha_op];
+
+					this.blend_alpha_factor_src =
+						this.constructor.BLEND_FACTOR[this.original_struct.blend_alpha_factor_src];
+
+					this.blend_alpha_factor_dst =
+						this.constructor.BLEND_FACTOR[this.original_struct.blend_alpha_factor_dst];
 
 					// this.uniforms
 					// this.uniform_blocks
@@ -764,6 +822,11 @@ export default class WasmWrapper
 
 
 					this.vertex_data = wasm_wrapper.StdVectorFloat(addr + (WasmWrapper.PTR_SIZE * 2));
+				}
+
+				addObject (object_addr)
+				{
+					wasm_wrapper.exports_demangled['RDTY::WRAPPERS::Scene::addObject()'](this.addr, object_addr);
 				}
 			}
 
