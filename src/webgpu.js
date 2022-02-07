@@ -476,7 +476,7 @@ const getWebgpu =
 								{
 									{
 										const code_glsl =
-											WasmWrapper.uint8Array2DomString
+											WasmWrapper.convertUint8ArrayToDomString
 											(this.original_struct.glsl_vulkan_code_vertex);
 
 										code_vertex = renderer.glslang.compileGLSL(code_glsl, 'vertex');
@@ -484,7 +484,7 @@ const getWebgpu =
 
 									{
 										const code_glsl =
-											WasmWrapper.uint8Array2DomString
+											WasmWrapper.convertUint8ArrayToDomString
 											(this.original_struct.glsl_vulkan_code_fragment);
 
 										code_fragment = renderer.glslang.compileGLSL(code_glsl, 'fragment');
@@ -496,10 +496,12 @@ const getWebgpu =
 								case Material.ShaderUsage.WGSL:
 								{
 									code_vertex =
-										WasmWrapper.uint8Array2DomString(this.original_struct.wgsl_code_vertex);
+										WasmWrapper.convertUint8ArrayToDomString
+										(this.original_struct.wgsl_code_vertex);
 
 									code_fragment =
-										WasmWrapper.uint8Array2DomString(this.original_struct.wgsl_code_fragment);
+										WasmWrapper.convertUint8ArrayToDomString
+										(this.original_struct.wgsl_code_fragment);
 
 									break;
 								}
@@ -595,7 +597,7 @@ const getWebgpu =
 								case Material.ShaderUsage.GLSL_VULKAN:
 								{
 									const code_glsl =
-										WasmWrapper.uint8Array2DomString
+										WasmWrapper.convertUint8ArrayToDomString
 										(this.original_struct.glsl_vulkan_code_compute);
 
 									code = renderer.glslang.compileGLSL(code_glsl, 'compute');
@@ -605,7 +607,9 @@ const getWebgpu =
 
 								case Material.ShaderUsage.WGSL:
 								{
-									code = WasmWrapper.uint8Array2DomString(this.original_struct.wgsl_code_compute);
+									code =
+										WasmWrapper.convertUint8ArrayToDomString
+										(this.original_struct.wgsl_code_compute);
 
 									break;
 								}
