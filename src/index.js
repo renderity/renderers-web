@@ -7,7 +7,9 @@ export default class Renderers
 {
 	constructor (wasm_wrapper)
 	{
-		const WasmWrapper = wasm_wrapper.constructor;
+		this.wasm_wrapper = wasm_wrapper;
+
+		const WasmWrapper = this.wasm_wrapper.constructor;
 
 
 
@@ -265,6 +267,7 @@ export default class Renderers
 					glsl4_code_fragment: 'StdString',
 					glsl_vulkan_code_vertex: 'StdString',
 					glsl_vulkan_code_fragment: 'StdString',
+					// glsl_vulkan_code_compute: 'StdString',
 					wgsl_code_vertex: 'StdString',
 					wgsl_code_fragment: 'StdString',
 					spirv_code_vertex: 'StdVectorUint32',
@@ -336,9 +339,9 @@ export default class Renderers
 
 
 
-				this.scene_vertex_data_offset = wasm_wrapper.SizeT(addr + (WasmWrapper.PTR_SIZE * 2));
-				this.scene_vertex_data_length = wasm_wrapper.SizeT(addr + (WasmWrapper.PTR_SIZE * 3));
-				this.vertex_data = wasm_wrapper.StdVectorFloat(addr + (WasmWrapper.PTR_SIZE * 4));
+				this.scene_vertex_data_offset = wasm_wrapper.SizeT(addr + (wasm_wrapper.PTR_SIZE * 2));
+				this.scene_vertex_data_length = wasm_wrapper.SizeT(addr + (wasm_wrapper.PTR_SIZE * 3));
+				this.vertex_data = wasm_wrapper.StdVectorFloat(addr + (wasm_wrapper.PTR_SIZE * 4));
 			}
 		}
 
@@ -354,7 +357,7 @@ export default class Renderers
 
 
 
-				this.vertex_data = wasm_wrapper.StdVectorFloat(addr + (WasmWrapper.PTR_SIZE * 2));
+				this.vertex_data = wasm_wrapper.StdVectorFloat(addr + (wasm_wrapper.PTR_SIZE * 2));
 			}
 
 			addObject (object_addr)

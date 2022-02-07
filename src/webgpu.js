@@ -178,12 +178,73 @@ const getWebgpu =
 
 
 
+					class StorageBlock
+					{
+						constructor (addr)
+						{
+							this.addr = addr;
+
+
+
+							this.buffer =
+								renderer.device.createBuffer
+								({
+									size: this.buffer_length,
+
+									usage:
+									(
+										global.GPUBufferUsage.COPY_DST |
+										global.GPUBufferUsage.STORAGE
+										// global.GPUBufferUsage.COPY_SRC |
+										// global.GPUBufferUsage.MAP_WRITE
+									),
+								});
+
+							renderer.gpu_resources.push(this.buffer);
+
+							// this.buffer.mapAsync(global.GPUMapMode.WRITE);
+
+							this.entry =
+							{
+								binding: this.binding,
+
+								resource:
+								{
+									buffer: this.buffer,
+									offset: 0,
+									size: this.buffer_length,
+								},
+							};
+
+							// rename to layout
+							this.entry_layout =
+							{
+								binding: this.binding,
+
+								// !
+								visibility: global.GPUShaderStage.COMPUTE | global.GPUShaderStage.FRAGMENT,
+
+								buffer:
+								{
+									type: 'storage',
+									hasDynamicOffset: false,
+									minBindingSize: 0,
+								},
+							};
+						}
+					}
+
+					this.StorageBlock = StorageBlock;
+
+
+
 					// Descriptor set is a bind group in vulkan terms.
 					class DescriptorSet extends DescriptorSetBase
 					{
 						static BINDING_TYPE =
 							{
 								UNIFORM_BUFFER: 0,
+								STORAGE_BUFFER: 1,
 							};
 
 
@@ -232,7 +293,8 @@ const getWebgpu =
 
 
 
-							const bind_group_layout = renderer.device.createBindGroupLayout(bind_group_layout_descriptor);
+							const bind_group_layout =
+								renderer.device.createBindGroupLayout(bind_group_layout_descriptor);
 
 							this.bind_group_descriptor.layout = bind_group_layout;
 
@@ -391,78 +453,70 @@ const getWebgpu =
 
 
 
-							switch (shader_usage)
 							{
-							case Material.ShaderUsage.SPIRV:
-							{
+								let code_vertex = null;
+								let code_fragment = null;
+
+
+
+								switch (shader_usage)
 								{
-									const code = new Uint32Array(this.original_struct.spirv_code_vertex);
+								case Material.ShaderUsage.SPIRV:
+								{
+									// Wrap spirv code Uint32Array to another Uint32Array
+									// since the provided array must not be shader.
+									code_vertex = new Uint32Array(this.original_struct.spirv_code_vertex);
+									code_fragment = new Uint32Array(this.original_struct.spirv_code_fragment);
 
-									const shader_module = renderer.device.createShaderModule({ code });
-
-									pipeline_configuration.vertex.module = shader_module;
+									break;
 								}
 
+								// SPIR-V
+								case Material.ShaderUsage.GLSL_VULKAN:
 								{
-									const code = new Uint32Array(this.original_struct.spirv_code_fragment);
+									{
+										const code_glsl =
+											WasmWrapper.uint8Array2DomString
+											(this.original_struct.glsl_vulkan_code_vertex);
 
-									const shader_module = renderer.device.createShaderModule({ code });
+										code_vertex = renderer.glslang.compileGLSL(code_glsl, 'vertex');
+									}
 
-									pipeline_configuration.fragment.module = shader_module;
+									{
+										const code_glsl =
+											WasmWrapper.uint8Array2DomString
+											(this.original_struct.glsl_vulkan_code_fragment);
+
+										code_fragment = renderer.glslang.compileGLSL(code_glsl, 'fragment');
+									}
+
+									break;
 								}
 
-								break;
-							}
-
-							case Material.ShaderUsage.GLSL_VULKAN:
-							{
+								case Material.ShaderUsage.WGSL:
 								{
-									const code_glsl =
-										WasmWrapper.uint8Array2DomString(this.original_struct.glsl_vulkan_code_vertex);
+									code_vertex =
+										WasmWrapper.uint8Array2DomString(this.original_struct.wgsl_code_vertex);
 
-									const code = renderer.glslang.compileGLSL(code_glsl, 'vertex');
+									code_fragment =
+										WasmWrapper.uint8Array2DomString(this.original_struct.wgsl_code_fragment);
 
-									const shader_module = renderer.device.createShaderModule({ code });
-
-									pipeline_configuration.vertex.module = shader_module;
+									break;
 								}
 
-								{
-									const code_glsl =
-										WasmWrapper.uint8Array2DomString(this.original_struct.glsl_vulkan_code_fragment);
-
-									const code = renderer.glslang.compileGLSL(code_glsl, 'fragment');
-
-									const shader_module = renderer.device.createShaderModule({ code });
-
-									pipeline_configuration.fragment.module = shader_module;
+								default:
 								}
 
-								break;
-							}
 
-							case Material.ShaderUsage.WGSL:
-							{
-								{
-									const code = WasmWrapper.uint8Array2DomString(this.original_struct.wgsl_code_vertex);
 
-									const shader_module = renderer.device.createShaderModule({ code });
+								const shader_module_vertex = renderer.device.createShaderModule({ code: code_vertex });
 
-									pipeline_configuration.vertex.module = shader_module;
-								}
+								pipeline_configuration.vertex.module = shader_module_vertex;
 
-								{
-									const code = WasmWrapper.uint8Array2DomString(this.original_struct.wgsl_code_fragment);
+								const shader_module_fragment =
+									renderer.device.createShaderModule({ code: code_fragment });
 
-									const shader_module = renderer.device.createShaderModule({ code });
-
-									pipeline_configuration.fragment.module = shader_module;
-								}
-
-								break;
-							}
-
-							default:
+								pipeline_configuration.fragment.module = shader_module_fragment;
 							}
 
 
@@ -506,6 +560,105 @@ const getWebgpu =
 					}
 
 					this.Material = Material;
+
+
+
+					class ComputePipeline
+					{
+						constructor (addr, shader_usage = Material.ShaderUsage.WGSL)
+						{
+							// super(addr);
+
+
+
+							const pipeline_configuration =
+							{
+								layout: null,
+							};
+
+
+
+							{
+								let code = null;
+
+
+
+								switch (shader_usage)
+								{
+								case Material.ShaderUsage.SPIRV:
+								{
+									code = new Uint32Array(this.original_struct.spirv_code_compute);
+
+									break;
+								}
+
+								case Material.ShaderUsage.GLSL_VULKAN:
+								{
+									const code_glsl =
+										WasmWrapper.uint8Array2DomString
+										(this.original_struct.glsl_vulkan_code_compute);
+
+									code = renderer.glslang.compileGLSL(code_glsl, 'compute');
+
+									break;
+								}
+
+								case Material.ShaderUsage.WGSL:
+								{
+									code = WasmWrapper.uint8Array2DomString(this.original_struct.wgsl_code_compute);
+
+									break;
+								}
+
+								default:
+								}
+
+
+
+								const shader_module = renderer.device.createShaderModule({ code });
+
+								pipeline_configuration.vertex.module = shader_module;
+							}
+
+
+
+							this.descriptor_sets = [];
+
+							const pipeline_layout_descriptor =
+							{
+								bindGroupLayouts: [],
+							};
+
+							this.original_struct.descriptor_sets.forEach
+							(
+								(descriptor_set_addr) =>
+								{
+									const descriptor_set = DescriptorSet.getInstance(descriptor_set_addr);
+
+									pipeline_layout_descriptor.bindGroupLayouts.push
+									(descriptor_set.bind_group_descriptor.layout);
+
+									this.descriptor_sets.push(descriptor_set);
+								},
+							);
+
+							pipeline_configuration.layout =
+								renderer.device.createPipelineLayout(pipeline_layout_descriptor);
+
+
+
+							this.pipeline = renderer.device.createRenderPipeline(pipeline_configuration);
+						}
+
+						use ()
+						{
+							// Use dedicated_descriptor_set?
+
+							renderer.render_pass_encoder.setPipeline(this.pipeline);
+						}
+					}
+
+					this.ComputePipeline = ComputePipeline;
 
 
 
