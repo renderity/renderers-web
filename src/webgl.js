@@ -214,12 +214,12 @@ const getWebgl =
 								if (renderer._context.constructor === WebGLRenderingContext)
 								{
 									code =
-									WasmWrapper.uint8Array2DomString(this.original_struct.glsl100es_code_vertex).trim();
+									WasmWrapper.convertUint8ArrayToDomString(this.original_struct.glsl100es_code_vertex).trim();
 								}
 								else if (renderer._context.constructor === WebGL2RenderingContext)
 								{
 									code =
-									WasmWrapper.uint8Array2DomString(this.original_struct.glsl300es_code_vertex).trim();
+									WasmWrapper.convertUint8ArrayToDomString(this.original_struct.glsl300es_code_vertex).trim();
 								}
 
 								const shader = gl.createShader(gl.VERTEX_SHADER);
@@ -250,12 +250,12 @@ const getWebgl =
 								if (renderer._context.constructor === WebGLRenderingContext)
 								{
 									code =
-									WasmWrapper.uint8Array2DomString(this.original_struct.glsl100es_code_fragment).trim();
+									WasmWrapper.convertUint8ArrayToDomString(this.original_struct.glsl100es_code_fragment).trim();
 								}
 								else if (renderer._context.constructor === WebGL2RenderingContext)
 								{
 									code =
-									WasmWrapper.uint8Array2DomString(this.original_struct.glsl300es_code_fragment).trim();
+									WasmWrapper.convertUint8ArrayToDomString(this.original_struct.glsl300es_code_fragment).trim();
 								}
 
 								const shader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -384,6 +384,12 @@ const getWebgl =
 						{
 							gl.drawArrays
 							(Material.used_instance.topology, this.scene_vertex_data_offset, this.scene_vertex_data_length);
+						}
+
+						drawIndexed ()
+						{
+							gl.drawElements
+							(Material.used_instance.topology, this.scene_index_data_length, gl.UNSIGNED_INT, this.scene_index_data_offset);
 						}
 					}
 

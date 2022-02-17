@@ -19,43 +19,83 @@ export default class Renderers
 
 			static getInstance (addr, ...args)
 			{
-				if (!this.instances)
-				{
-					this.instances = {};
-				}
+				// if (!this.instances)
+				// {
+				// 	this.instances = {};
+				// }
 
-				if (!this.instances[addr])
-				{
-					Object.defineProperty
+				// if (!this.instances[addr])
+				// {
+				// 	Object.defineProperty
+				// 	(
+				// 		this.instances,
+
+				// 		addr,
+
+				// 		{ value: new this(addr, ...args) },
+				// 	);
+				// }
+
+				// return this.instances[addr];
+
+				return new this(addr, ...args);
+			}
+
+			static getOriginalStructOffsets (name)
+			{
+				const offsets =
+					wasm_wrapper.SizeTv
 					(
-						this.instances,
-
-						addr,
-
-						{ value: new this(addr, ...args) },
+						wasm_wrapper.exports_demangled[name],
+						Object.keys(this.original_struct_descriptor).length,
 					);
-				}
 
-				return this.instances[addr];
+				return offsets;
 			}
 
 			static getOriginalStruct (addr)
 			{
-				const original_struct = {};
-
-				let member_index = 0;
-
-				for (const member_name in this.original_struct_descriptor)
+				switch (typeof addr)
 				{
-					const type = this.original_struct_descriptor[member_name];
+				case 'number':
+				{
+					const original_struct = {};
 
-					original_struct[member_name] =
-						wasm_wrapper[type](addr + this.original_struct_offsets[member_index]);
+					let member_index = 0;
 
-					++member_index;
+					for (const member_name in this.original_struct_descriptor)
+					{
+						// if (!this.original_struct_offsets)
+						// {
+						// 	this.original_struct_offsets =
+						// 		wasm_wrapper.SizeTv
+						// 		(
+						// 			wasm_wrapper.exports_demangled[this.original_struct_offsets_name],
+						// 			Object.keys(this.original_struct_descriptor).length,
+						// 		);
+						// }
+
+						const type = this.original_struct_descriptor[member_name];
+
+						original_struct[member_name] =
+							wasm_wrapper[type](addr + this.original_struct_offsets[member_index]);
+
+						++member_index;
+					}
+
+					return original_struct;
 				}
 
-				return original_struct;
+				case 'object':
+				{
+					return addr;
+				}
+
+				default:
+				{
+					throw new Error('RDTY: Invalid argument.');
+				}
+				}
 			}
 
 
@@ -63,6 +103,8 @@ export default class Renderers
 			constructor (addr)
 			{
 				this.addr = addr;
+
+				this.original_struct = this.constructor.getOriginalStruct(this.addr);
 			}
 		}
 
@@ -77,11 +119,7 @@ export default class Renderers
 				};
 
 			static original_struct_offsets =
-				wasm_wrapper.SizeTv
-				(
-					wasm_wrapper.exports_demangled['RDTY::WRAPPERS::renderer_offsets'],
-					Object.keys(this.original_struct_descriptor).length,
-				);
+				this.getOriginalStructOffsets('RDTY::WRAPPERS::renderer_offsets');
 
 
 
@@ -90,8 +128,6 @@ export default class Renderers
 				super(addr);
 
 
-
-				this.original_struct = RendererBase.getOriginalStruct(this.addr);
 
 				this.width = this.original_struct.width;
 				this.height = this.original_struct.height;
@@ -114,11 +150,7 @@ export default class Renderers
 				};
 
 			static original_struct_offsets =
-				wasm_wrapper.SizeTv
-				(
-					wasm_wrapper.exports_demangled['RDTY::WRAPPERS::uniform_offsets'],
-					Object.keys(this.original_struct_descriptor).length,
-				);
+				this.getOriginalStructOffsets('RDTY::WRAPPERS::uniform_offsets');
 
 
 
@@ -128,18 +160,16 @@ export default class Renderers
 
 
 
-				this.original_struct = UniformBase.getOriginalStruct(this.addr);
+				// this.object_addr = this.original_struct.object_addr;
 
-				this.object_addr = this.original_struct.object_addr;
-
-				this.name = WasmWrapper.uint8Array2DomString(this.original_struct.name);
+				this.name = WasmWrapper.convertUint8ArrayToDomString(this.original_struct.name);
 
 				// uniform block index
-				this.block_index = this.original_struct.block_index;
+				// this.block_index = this.original_struct.block_index;
 
-				this.size = this.original_struct.size;
+				// this.size = this.original_struct.size;
 
-				this._data = wasm_wrapper.Charv2(this.object_addr, this.size);
+				this._data = wasm_wrapper.Charv2(this.original_struct.object_addr, this.original_struct.size);
 			}
 		}
 
@@ -151,18 +181,14 @@ export default class Renderers
 		{
 			static original_struct_descriptor =
 				{
-					binding: 'SizeT',
 					type: 'SizeT',
+					binding: 'SizeT',
 					name: 'StdString',
 					uniforms: 'StdVectorAddr',
 				};
 
 			static original_struct_offsets =
-				wasm_wrapper.SizeTv
-				(
-					wasm_wrapper.exports_demangled['RDTY::WRAPPERS::uniform_block_offsets'],
-					Object.keys(this.original_struct_descriptor).length,
-				);
+				this.getOriginalStructOffsets('RDTY::WRAPPERS::uniform_block_offsets');
 
 
 
@@ -172,13 +198,11 @@ export default class Renderers
 
 
 
-				this.original_struct = UniformBlockBase.getOriginalStruct(this.addr);
+				// this.binding = this.original_struct.binding;
 
-				this.binding = this.original_struct.binding;
+				// this.type = this.original_struct.type;
 
-				this.type = this.original_struct.type;
-
-				this.name = WasmWrapper.uint8Array2DomString(this.original_struct.name);
+				this.name = WasmWrapper.convertUint8ArrayToDomString(this.original_struct.name);
 
 
 
@@ -214,19 +238,19 @@ export default class Renderers
 
 
 
-		class DescriptorSetBase extends Base
+		class StorageBlockBase extends Base
 		{
 			static original_struct_descriptor =
 				{
-					bindings: 'StdVectorAddr',
+					type: 'SizeT',
+					binding: 'SizeT',
+					name: 'StdString',
+					_data: 'Addr',
+					size: 'SizeT',
 				};
 
 			static original_struct_offsets =
-				wasm_wrapper.SizeTv
-				(
-					wasm_wrapper.exports_demangled['RDTY::WRAPPERS::descriptor_set_offsets'],
-					Object.keys(this.original_struct_descriptor).length,
-				);
+				this.getOriginalStructOffsets('RDTY::WRAPPERS::storage_block_offsets');
 
 
 
@@ -236,10 +260,35 @@ export default class Renderers
 
 
 
-				this.original_struct = DescriptorSetBase.getOriginalStruct(this.addr);
+				// this.binding = this.original_struct.binding;
 
-				// this.uniform_blocks
+				// this.type = this.original_struct.type;
+
+				this.name = WasmWrapper.convertUint8ArrayToDomString(this.original_struct.name);
+
+				this._data = wasm_wrapper.Charv2(this.original_struct._data, this.original_struct.size);
+
+
+
+				this.buffer = null;
+
+				// this.buffer_length = 0;
 			}
+		}
+
+		this.StorageBlockBase = StorageBlockBase;
+
+
+
+		class DescriptorSetBase extends Base
+		{
+			static original_struct_descriptor =
+				{
+					bindings: 'StdVectorAddr',
+				};
+
+			static original_struct_offsets =
+				this.getOriginalStructOffsets('RDTY::WRAPPERS::descriptor_set_offsets');
 		}
 
 		this.DescriptorSetBase = DescriptorSetBase;
@@ -278,11 +327,7 @@ export default class Renderers
 				};
 
 			static original_struct_offsets =
-				wasm_wrapper.SizeTv
-				(
-					wasm_wrapper.exports_demangled['RDTY::WRAPPERS::material_offsets'],
-					Object.keys(this.original_struct_descriptor).length,
-				);
+				this.getOriginalStructOffsets('RDTY::WRAPPERS::material_offsets');
 
 			static used_instance = null;
 
@@ -291,10 +336,6 @@ export default class Renderers
 			constructor (addr)
 			{
 				super(addr);
-
-
-
-				this.original_struct = MaterialBase.getOriginalStruct(this.addr);
 
 
 
@@ -333,15 +374,40 @@ export default class Renderers
 
 		class ObjectBase extends Base
 		{
-			constructor (addr)
+			static original_struct_descriptor =
+				{
+					scene_vertex_data_offset: 'SizeT',
+					scene_vertex_data_length: 'SizeT',
+					vertex_data: 'StdVectorFloat',
+					scene_index_data_offset: 'SizeT',
+					scene_index_data_length: 'SizeT',
+					index_data: 'StdVectorUint32',
+				};
+
+			static original_struct_offsets =
+				this.getOriginalStructOffsets('RDTY::WRAPPERS::object_offsets');
+
+
+
+			updateVertexData (_data)
 			{
-				super(addr);
+				// TODO: cache this
+				const offset =
+					this.constructor.original_struct_offsets
+						[Object.keys(this.constructor.original_struct_descriptor).indexOf('vertex_data')];
 
+				wasm_wrapper.exports.RDTY_WASM_WRAPPER_StdVector_resize(this.addr + offset, _data.length);
+				wasm_wrapper.StdVectorFloat(this.addr + offset).set(_data);
+			}
 
+			updateIndexData (_data)
+			{
+				const offset =
+					this.constructor.original_struct_offsets
+						[Object.keys(this.constructor.original_struct_descriptor).indexOf('index_data')];
 
-				this.scene_vertex_data_offset = wasm_wrapper.SizeT(addr + (wasm_wrapper.PTR_SIZE * 2));
-				this.scene_vertex_data_length = wasm_wrapper.SizeT(addr + (wasm_wrapper.PTR_SIZE * 3));
-				this.vertex_data = wasm_wrapper.StdVectorFloat(addr + (wasm_wrapper.PTR_SIZE * 4));
+				wasm_wrapper.exports.RDTY_WASM_WRAPPER_StdVector_resize(this.addr + offset, _data.length);
+				wasm_wrapper.StdVectorUint32(this.addr + offset).set(_data);
 			}
 		}
 
@@ -351,19 +417,14 @@ export default class Renderers
 
 		class SceneBase extends Base
 		{
-			constructor (addr)
-			{
-				super(addr);
+			static original_struct_descriptor =
+				{
+					vertex_data: 'StdVectorFloat',
+					index_data: 'StdVectorUint32',
+				};
 
-
-
-				this.vertex_data = wasm_wrapper.StdVectorFloat(addr + (wasm_wrapper.PTR_SIZE * 2));
-			}
-
-			addObject (object_addr)
-			{
-				wasm_wrapper.exports_demangled['RDTY::WRAPPERS::Scene::addObject()'](this.addr, object_addr);
-			}
+			static original_struct_offsets =
+				this.getOriginalStructOffsets('RDTY::WRAPPERS::scene_offsets');
 		}
 
 		this.SceneBase = SceneBase;
