@@ -65,16 +65,6 @@ export default class Renderers
 
 					for (const member_name in this.original_struct_descriptor)
 					{
-						// if (!this.original_struct_offsets)
-						// {
-						// 	this.original_struct_offsets =
-						// 		wasm_wrapper.SizeTv
-						// 		(
-						// 			wasm_wrapper.exports_demangled[this.original_struct_offsets_name],
-						// 			Object.keys(this.original_struct_descriptor).length,
-						// 		);
-						// }
-
 						const type = this.original_struct_descriptor[member_name];
 
 						original_struct[member_name] =
@@ -160,14 +150,7 @@ export default class Renderers
 
 
 
-				// this.object_addr = this.original_struct.object_addr;
-
 				this.name = WasmWrapper.convertUint8ArrayToDomString(this.original_struct.name);
-
-				// uniform block index
-				// this.block_index = this.original_struct.block_index;
-
-				// this.size = this.original_struct.size;
 
 				this._data = wasm_wrapper.Charv2(this.original_struct.object_addr, this.original_struct.size);
 			}
@@ -197,10 +180,6 @@ export default class Renderers
 				super(addr);
 
 
-
-				// this.binding = this.original_struct.binding;
-
-				// this.type = this.original_struct.type;
 
 				this.name = WasmWrapper.convertUint8ArrayToDomString(this.original_struct.name);
 
@@ -260,10 +239,6 @@ export default class Renderers
 
 
 
-				// this.binding = this.original_struct.binding;
-
-				// this.type = this.original_struct.type;
-
 				this.name = WasmWrapper.convertUint8ArrayToDomString(this.original_struct.name);
 
 				this._data = wasm_wrapper.Charv2(this.original_struct._data, this.original_struct.size);
@@ -271,8 +246,6 @@ export default class Renderers
 
 
 				this.buffer = null;
-
-				// this.buffer_length = 0;
 			}
 		}
 
