@@ -587,7 +587,22 @@ const getWebgpu =
 											WasmWrapper.convertUint8ArrayToDomString
 											(this.original_struct.glsl_vulkan_code_vertex);
 
-										code_vertex = renderer.glslang.compileGLSL(code_glsl, 'vertex');
+										try
+										{
+											code_vertex =
+												renderer.glslang.compileGLSL(code_glsl, 'vertex');
+										}
+										catch (_error)
+										{
+											LOG
+											(
+												code_glsl.split('\n')
+													.map
+													((line, line_index) => `${ line_index + 1 }${ line }`).join('\n'),
+											);
+
+											console.error(_error);
+										}
 									}
 
 									{
@@ -595,7 +610,21 @@ const getWebgpu =
 											WasmWrapper.convertUint8ArrayToDomString
 											(this.original_struct.glsl_vulkan_code_fragment);
 
-										code_fragment = renderer.glslang.compileGLSL(code_glsl, 'fragment');
+										try
+										{
+											code_fragment = renderer.glslang.compileGLSL(code_glsl, 'fragment');
+										}
+										catch (_error)
+										{
+											LOG
+											(
+												code_glsl.split('\n')
+													.map
+													((line, line_index) => `${ line_index + 1 }${ line }`).join('\n'),
+											);
+
+											console.error(_error);
+										}
 									}
 
 									break;
@@ -708,7 +737,21 @@ const getWebgpu =
 										WasmWrapper.convertUint8ArrayToDomString
 										(this.original_struct.glsl_vulkan_code_compute);
 
-									code = renderer.glslang.compileGLSL(code_glsl, 'compute');
+									try
+									{
+										code = renderer.glslang.compileGLSL(code_glsl, 'compute');
+									}
+									catch (_error)
+									{
+										LOG
+										(
+											code_glsl.split('\n')
+												.map
+												((line, line_index) => `${ line_index + 1 }${ line }`).join('\n'),
+										);
+
+										console.error(_error);
+									}
 
 									break;
 								}
