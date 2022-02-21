@@ -109,6 +109,7 @@ const getWebgpu =
 								({
 									size: this.buffer_length,
 
+									// !
 									usage:
 									(
 										global.GPUBufferUsage.COPY_DST |
@@ -140,7 +141,11 @@ const getWebgpu =
 								binding: this.original_struct.binding,
 
 								// !
-								visibility: global.GPUShaderStage.VERTEX,
+								visibility:
+								(
+									global.GPUShaderStage.VERTEX |
+									global.GPUShaderStage.FRAGMENT
+								),
 
 								buffer:
 								{
@@ -253,8 +258,9 @@ const getWebgpu =
 
 					class StorageBlock2
 					{
-						constructor (binding, buffer, size)
+						constructor (buffer, binding, size)
 						{
+							// LOG(buffer, binding, size)
 							this.buffer =
 								renderer.device.createBuffer
 								({
@@ -288,7 +294,7 @@ const getWebgpu =
 							// rename to layout
 							this.entry_layout =
 							{
-								binding: this.binding,
+								binding,
 
 								// !
 								visibility:
@@ -304,12 +310,10 @@ const getWebgpu =
 									minBindingSize: 0,
 								},
 							};
-
-
-
-							// renderer.device.queue.writeBuffer
-							// (this.buffer, 0, this._data, 0, this.buffer_length);
 						}
+
+						use ()
+						{}
 					}
 
 					this.StorageBlock2 = StorageBlock2;
@@ -368,7 +372,6 @@ const getWebgpu =
 									{
 									case DescriptorSet.BINDING_TYPE.UNIFORM_BLOCK:
 									{
-										LOG(111)
 										binding = UniformBlock.getInstance(binding_addr);
 
 										break;
@@ -376,10 +379,7 @@ const getWebgpu =
 
 									case DescriptorSet.BINDING_TYPE.STORAGE_BLOCK:
 									{
-										LOG(222)
 										binding = StorageBlock.getInstance(binding_addr);
-
-										LOG(binding)
 
 										break;
 									}
@@ -425,6 +425,73 @@ const getWebgpu =
 					}
 
 					this.DescriptorSet = DescriptorSet;
+
+
+
+					class DescriptorSet2
+					{
+						constructor (bindings)
+						{
+							this.binding_seq = [];
+							this.binding_dict = {};
+
+							const bind_group_layout_descriptor =
+							{
+								entryCount: 0,
+								entries: [],
+							};
+
+							this.bind_group_descriptor =
+							{
+								layout: null,
+
+								entryCount: 0,
+								entries: [],
+							};
+
+							bindings.forEach
+							(
+								(binding) =>
+								{
+									// LOG(binding.entry_layout)
+									bind_group_layout_descriptor.entries.push(binding.entry_layout);
+
+									++bind_group_layout_descriptor.entryCount;
+
+									this.bind_group_descriptor.entries.push(binding.entry);
+
+									++this.bind_group_descriptor.entryCount;
+
+									this.binding_seq.push(binding);
+									this.binding_dict[binding.name] = binding;
+								},
+							);
+
+
+
+							const bind_group_layout =
+								renderer.device.createBindGroupLayout(bind_group_layout_descriptor);
+
+							this.bind_group_descriptor.layout = bind_group_layout;
+
+							this.bind_group =
+								renderer.device.createBindGroup(this.bind_group_descriptor);
+
+
+
+							// use();
+						}
+
+						use (bind_group_index)
+						{
+							renderer.render_pass_encoder.setBindGroup(bind_group_index, this.bind_group, []);
+
+							// use for loop
+							this.binding_seq.forEach((binding) => binding.use());
+						}
+					}
+
+					this.DescriptorSet2 = DescriptorSet2;
 
 
 
@@ -475,7 +542,7 @@ const getWebgpu =
 
 
 
-						constructor (addr, shader_usage = Material.ShaderUsage.WGSL)
+						constructor (addr, shader_usage = Material.ShaderUsage.WGSL, descriptor_sets = [])
 						{
 							super(addr);
 
@@ -680,6 +747,17 @@ const getWebgpu =
 								},
 							);
 
+							descriptor_sets.forEach
+							(
+								(descriptor_set) =>
+								{
+									pipeline_layout_descriptor.bindGroupLayouts.push
+									(descriptor_set.bind_group_descriptor.layout);
+
+									this.descriptor_sets.push(descriptor_set);
+								},
+							);
+
 							pipeline_configuration.layout =
 								renderer.device.createPipelineLayout(pipeline_layout_descriptor);
 
@@ -822,7 +900,7 @@ const getWebgpu =
 						draw ()
 						{
 							renderer.render_pass_encoder.draw
-							(this.original_struct.scene_vertex_data_length, 1, this.original_struct.scene_vertex_data_offset, 0);
+							(this.original_struct.scene_position_data_length, 1, this.original_struct.scene_position_data_offset, 0);
 						}
 
 						drawIndexed ()
@@ -847,25 +925,27 @@ const getWebgpu =
 							this.position_buffer =
 								renderer.device.createBuffer
 								({
-									size: this.original_struct.vertex_data.byteLength,
+									size: this.original_struct.position_data.byteLength,
 
 									usage:
 									(
 										window.GPUBufferUsage.COPY_DST |
-										window.GPUBufferUsage.VERTEX |
-										window.GPUBufferUsage.STORAGE
+										window.GPUBufferUsage.VERTEX
+										// window.GPUBufferUsage.STORAGE
 									),
 								});
 
 							renderer.gpu_resources.push(this.position_buffer);
 
+							LOG(this.original_struct.position_data)
+
 							renderer.device.queue.writeBuffer
 							(
 								this.position_buffer,
 								0,
-								this.original_struct.vertex_data,
+								this.original_struct.position_data.buffer,
 								0,
-								this.original_struct.vertex_data.length,
+								this.original_struct.position_data.byteLength,
 							);
 
 
@@ -957,6 +1037,7 @@ const getWebgpu =
 									(
 										window.GPUBufferUsage.COPY_DST |
 										window.GPUBufferUsage.INDEX
+										// window.GPUBufferUsage.STORAGE
 									),
 								});
 
@@ -968,15 +1049,98 @@ const getWebgpu =
 								0,
 								this.original_struct.index_data,
 								0,
+								// byteLength?
+								this.original_struct.index_data.length,
+							);
+						}
+
+						makeDescriptorSet (bindings = [])
+						{
+							this.position_buffer2 =
+								renderer.device.createBuffer
+								({
+									size: this.original_struct.position_data.byteLength,
+
+									usage:
+									(
+										window.GPUBufferUsage.COPY_DST |
+										// window.GPUBufferUsage.VERTEX |
+										window.GPUBufferUsage.STORAGE
+									),
+								});
+
+							renderer.gpu_resources.push(this.position_buffer2);
+
+							renderer.device.queue.writeBuffer
+							(
+								this.position_buffer2,
+								0,
+								this.original_struct.position_data,
+								0,
+								this.original_struct.position_data.length,
+							);
+
+							this.position_storage_block =
+								new StorageBlock2
+								(
+									this.position_buffer2,
+									0,
+									this.original_struct.position_data.length,
+								);
+
+							// this.normal_storage_block =
+							// 	new StorageBlock2
+							// 	(
+							// 		this.normal_buffer,
+							// 		1,
+							// 		this.original_struct.normal_data.length,
+							// 	);
+
+
+
+							this.index_buffer2 =
+								renderer.device.createBuffer
+								({
+									size: this.original_struct.index_data.byteLength,
+
+									usage:
+									(
+										window.GPUBufferUsage.COPY_DST |
+										// window.GPUBufferUsage.INDEX |
+										window.GPUBufferUsage.STORAGE
+									),
+								});
+
+							renderer.gpu_resources.push(this.index_buffer2);
+
+							renderer.device.queue.writeBuffer
+							(
+								this.index_buffer2,
+								0,
+								this.original_struct.index_data,
+								0,
 								this.original_struct.index_data.length,
 							);
 
+							this.index_storage_block =
+								new StorageBlock2
+								(
+									this.index_buffer2,
+									2,
+									this.original_struct.index_data.length,
+								);
 
+							this.descriptor_set =
+								new DescriptorSet2
+								(
+									[
+										this.position_storage_block,
+										// this.normal_storage_block,
+										this.index_storage_block,
 
-							// if ()
-							// {
-							// 	this.descriptor_set
-							// }
+										...bindings,
+									],
+								);
 						}
 					}
 

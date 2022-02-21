@@ -349,9 +349,9 @@ export default class Renderers
 		{
 			static original_struct_descriptor =
 				{
-					scene_vertex_data_offset: 'SizeT',
-					scene_vertex_data_length: 'SizeT',
-					vertex_data: 'StdVectorFloat',
+					scene_position_data_offset: 'SizeT',
+					scene_position_data_length: 'SizeT',
+					position_data: 'StdVectorFloat',
 					scene_index_data_offset: 'SizeT',
 					scene_index_data_length: 'SizeT',
 					index_data: 'StdVectorUint32',
@@ -367,7 +367,7 @@ export default class Renderers
 				// TODO: cache this
 				const offset =
 					this.constructor.original_struct_offsets
-						[Object.keys(this.constructor.original_struct_descriptor).indexOf('vertex_data')];
+						[Object.keys(this.constructor.original_struct_descriptor).indexOf('position_data')];
 
 				wasm_wrapper.exports.RDTY_WASM_WRAPPER_StdVector_resize(this.addr + offset, _data.length);
 				wasm_wrapper.StdVectorFloat(this.addr + offset).set(_data);
@@ -392,7 +392,7 @@ export default class Renderers
 		{
 			static original_struct_descriptor =
 				{
-					vertex_data: 'StdVectorFloat',
+					position_data: 'StdVectorFloat',
 					index_data: 'StdVectorUint32',
 				};
 
