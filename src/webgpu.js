@@ -236,7 +236,7 @@ const getWebgpu =
 
 								buffer:
 								{
-									type: 'storage',
+									type: 'read-only-storage',
 									hasDynamicOffset: false,
 									minBindingSize: 0,
 								},
@@ -260,24 +260,9 @@ const getWebgpu =
 					{
 						constructor (buffer, binding, size)
 						{
-							// LOG(buffer, binding, size)
-							this.buffer =
-								renderer.device.createBuffer
-								({
-									size,
+							// renderer.gpu_resources.push(buffer);
 
-									usage:
-									(
-										global.GPUBufferUsage.COPY_DST |
-										global.GPUBufferUsage.STORAGE
-										// global.GPUBufferUsage.COPY_SRC |
-										// global.GPUBufferUsage.MAP_WRITE
-									),
-								});
-
-							renderer.gpu_resources.push(buffer);
-
-							// this.buffer.mapAsync(global.GPUMapMode.WRITE);
+							// buffer.mapAsync(global.GPUMapMode.WRITE);
 
 							this.entry =
 							{
@@ -305,7 +290,7 @@ const getWebgpu =
 
 								buffer:
 								{
-									type: 'storage',
+									type: 'read-only-storage',
 									hasDynamicOffset: false,
 									minBindingSize: 0,
 								},
@@ -900,13 +885,87 @@ const getWebgpu =
 						draw ()
 						{
 							renderer.render_pass_encoder.draw
-							(this.original_struct.scene_position_data_length, 1, this.original_struct.scene_position_data_offset, 0);
+							(
+								this.original_struct.scene_position_data_length,
+								1,
+								this.original_struct.scene_position_data_offset,
+								0,
+							);
 						}
 
 						drawIndexed ()
 						{
 							renderer.render_pass_encoder.drawIndexed
-							(this.original_struct.scene_index_data_length, 1, this.original_struct.scene_index_data_offset, 0, 0);
+							(
+								this.original_struct.scene_index_data_length,
+								1,
+								this.original_struct.scene_index_data_offset,
+								0,
+								0,
+							);
+						}
+
+						draw2 ()
+						{
+							renderer.render_pass_encoder.draw
+							(this.original_struct.position_data.length / 3, 1, 0, 0);
+						}
+
+						drawIndexed2 ()
+						{
+							renderer.render_pass_encoder.drawIndexed
+							(this.original_struct.index_data.length / 3, 1, 0, 0, 0);
+						}
+
+						createBuffers ()
+						{
+							this.position_buffer =
+								renderer.device.createBuffer
+								({
+									size: this.original_struct.position_data.byteLength,
+
+									usage:
+									(
+										window.GPUBufferUsage.COPY_DST |
+										window.GPUBufferUsage.VERTEX
+									),
+								});
+
+							renderer.gpu_resources.push(this.position_buffer);
+
+							renderer.device.queue.writeBuffer
+							(
+								this.position_buffer,
+								0,
+								this.original_struct.position_data,
+								0,
+								this.original_struct.position_data.length,
+							);
+
+
+
+							this.index_buffer =
+								renderer.device.createBuffer
+								({
+									size: this.original_struct.index_data.byteLength,
+
+									usage:
+									(
+										window.GPUBufferUsage.COPY_DST |
+										window.GPUBufferUsage.INDEX
+									),
+								});
+
+							renderer.gpu_resources.push(this.index_buffer);
+
+							renderer.device.queue.writeBuffer
+							(
+								this.index_buffer,
+								0,
+								this.original_struct.index_data,
+								0,
+								this.original_struct.index_data.length,
+							);
 						}
 					}
 
@@ -922,136 +981,53 @@ const getWebgpu =
 
 
 
-							this.position_buffer =
-								renderer.device.createBuffer
-								({
-									size: this.original_struct.position_data.byteLength,
-
-									usage:
-									(
-										window.GPUBufferUsage.COPY_DST |
-										window.GPUBufferUsage.VERTEX
-										// window.GPUBufferUsage.STORAGE
-									),
-								});
-
-							renderer.gpu_resources.push(this.position_buffer);
-
-							LOG(this.original_struct.position_data)
-
-							renderer.device.queue.writeBuffer
-							(
-								this.position_buffer,
-								0,
-								this.original_struct.position_data.buffer,
-								0,
-								this.original_struct.position_data.byteLength,
-							);
-
-
-
-							// this.normal_buffer =
+							// this.position_buffer =
 							// 	renderer.device.createBuffer
 							// 	({
-							// 		size: this.original_struct.normal_data.byteLength,
+							// 		size: this.original_struct.position_data.byteLength,
 
 							// 		usage:
 							// 		(
 							// 			window.GPUBufferUsage.COPY_DST |
-							// 			window.GPUBufferUsage.VERTEX |
-							// 			window.GPUBufferUsage.STORAGE
+							// 			window.GPUBufferUsage.VERTEX
 							// 		),
 							// 	});
 
-							// renderer.gpu_resources.push(this.normal_buffer);
+							// renderer.gpu_resources.push(this.position_buffer);
 
 							// renderer.device.queue.writeBuffer
 							// (
-							// 	this.normal_buffer,
+							// 	this.position_buffer,
 							// 	0,
-							// 	this.original_struct.normal_data,
+							// 	this.original_struct.position_data,
 							// 	0,
-							// 	this.original_struct.normal_data.length,
+							// 	this.original_struct.position_data.length,
 							// );
 
 
 
-							// this.uv_buffer =
+							// this.index_buffer =
 							// 	renderer.device.createBuffer
 							// 	({
-							// 		size: this.original_struct.uv_data.byteLength,
+							// 		size: this.original_struct.index_data.byteLength,
 
 							// 		usage:
 							// 		(
 							// 			window.GPUBufferUsage.COPY_DST |
-							// 			window.GPUBufferUsage.VERTEX |
-							// 			window.GPUBufferUsage.STORAGE
+							// 			window.GPUBufferUsage.INDEX
 							// 		),
 							// 	});
 
-							// renderer.gpu_resources.push(this.uv_buffer);
+							// renderer.gpu_resources.push(this.index_buffer);
 
 							// renderer.device.queue.writeBuffer
 							// (
-							// 	this.uv_buffer,
+							// 	this.index_buffer,
 							// 	0,
-							// 	this.original_struct.uv_data,
+							// 	this.original_struct.index_data,
 							// 	0,
-							// 	this.original_struct.uv_data.length,
+							// 	this.original_struct.index_data.length,
 							// );
-
-
-
-							// this.color_buffer =
-							// 	renderer.device.createBuffer
-							// 	({
-							// 		size: this.original_struct.color_data.byteLength,
-
-							// 		usage:
-							// 		(
-							// 			window.GPUBufferUsage.COPY_DST |
-							// 			window.GPUBufferUsage.VERTEX |
-							// 			window.GPUBufferUsage.STORAGE
-							// 		),
-							// 	});
-
-							// renderer.gpu_resources.push(this.color_buffer);
-
-							// renderer.device.queue.writeBuffer
-							// (
-							// 	this.color_buffer,
-							// 	0,
-							// 	this.original_struct.color_data,
-							// 	0,
-							// 	this.original_struct.color_data.length,
-							// );
-
-
-
-							this.index_buffer =
-								renderer.device.createBuffer
-								({
-									size: this.original_struct.index_data.byteLength,
-
-									usage:
-									(
-										window.GPUBufferUsage.COPY_DST |
-										window.GPUBufferUsage.INDEX
-										// window.GPUBufferUsage.STORAGE
-									),
-								});
-
-							renderer.gpu_resources.push(this.index_buffer);
-
-							renderer.device.queue.writeBuffer
-							(
-								this.index_buffer,
-								0,
-								this.original_struct.index_data,
-								0,
-								// byteLength?
-								this.original_struct.index_data.length,
-							);
 						}
 
 						makeDescriptorSet (bindings = [])
@@ -1064,7 +1040,6 @@ const getWebgpu =
 									usage:
 									(
 										window.GPUBufferUsage.COPY_DST |
-										// window.GPUBufferUsage.VERTEX |
 										window.GPUBufferUsage.STORAGE
 									),
 								});
@@ -1085,16 +1060,8 @@ const getWebgpu =
 								(
 									this.position_buffer2,
 									0,
-									this.original_struct.position_data.length,
+									this.original_struct.position_data.byteLength,
 								);
-
-							// this.normal_storage_block =
-							// 	new StorageBlock2
-							// 	(
-							// 		this.normal_buffer,
-							// 		1,
-							// 		this.original_struct.normal_data.length,
-							// 	);
 
 
 
@@ -1106,7 +1073,6 @@ const getWebgpu =
 									usage:
 									(
 										window.GPUBufferUsage.COPY_DST |
-										// window.GPUBufferUsage.INDEX |
 										window.GPUBufferUsage.STORAGE
 									),
 								});
@@ -1127,15 +1093,16 @@ const getWebgpu =
 								(
 									this.index_buffer2,
 									2,
-									this.original_struct.index_data.length,
+									this.original_struct.index_data.byteLength,
 								);
+
+
 
 							this.descriptor_set =
 								new DescriptorSet2
 								(
 									[
 										this.position_storage_block,
-										// this.normal_storage_block,
 										this.index_storage_block,
 
 										...bindings,
