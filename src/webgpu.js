@@ -305,6 +305,76 @@ const getWebgpu =
 
 
 
+					class StorageBlock3
+					{
+						constructor (data, binding, size)
+						{
+							const buffer =
+								renderer.device.createBuffer
+								({
+									size: data.byteLength,
+
+									usage:
+									(
+										window.GPUBufferUsage.COPY_DST |
+										window.GPUBufferUsage.STORAGE
+									),
+								});
+
+							// buffer.mapAsync(global.GPUMapMode.WRITE);
+
+							renderer.gpu_resources.push(buffer);
+
+							renderer.device.queue.writeBuffer
+							(
+								buffer,
+								0,
+								data,
+								0,
+								data.length,
+							);
+
+							this.entry =
+							{
+								binding,
+
+								resource:
+								{
+									buffer,
+									offset: 0,
+									size,
+								},
+							};
+
+							// rename to layout
+							this.entry_layout =
+							{
+								binding,
+
+								// !
+								visibility:
+								(
+									global.GPUShaderStage.FRAGMENT |
+									global.GPUShaderStage.COMPUTE
+								),
+
+								buffer:
+								{
+									type: 'read-only-storage',
+									hasDynamicOffset: false,
+									minBindingSize: 0,
+								},
+							};
+						}
+
+						use ()
+						{}
+					}
+
+					this.StorageBlock3 = StorageBlock3;
+
+
+
 					// Descriptor set is a bind group in vulkan terms.
 					class DescriptorSet extends DescriptorSetBase
 					{
