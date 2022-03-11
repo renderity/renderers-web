@@ -122,6 +122,44 @@ export default class Renderers
 				this.width = this.original_struct.width;
 				this.height = this.original_struct.height;
 			}
+
+			appendFpsCounter ()
+			{
+				this.time = Date.now();
+
+				this.fps_dom_element = document.createElement('div');
+
+				window.Object.assign
+				(
+					this.fps_dom_element.style,
+
+					{
+						position: 'fixed',
+						left: `${ this.canvas.offsetLeft }px`,
+						top: `${ this.canvas.offsetTop }px`,
+						color: 'black',
+						backgroundColor: 'white',
+					},
+				);
+
+				this.canvas.parentNode.appendChild(this.fps_dom_element);
+
+				this.fps_counter = 0;
+			}
+
+			updateFpsCounter ()
+			{
+				if (Math.floor((Date.now() - this.time) * 0.001))
+				{
+					this.fps_dom_element.innerHTML = this.fps_counter;
+
+					this.fps_counter = 0;
+
+					this.time = Date.now();
+				}
+
+				++this.fps_counter;
+			}
 		}
 
 		this.RendererBase = RendererBase;
