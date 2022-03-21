@@ -313,12 +313,12 @@ const getWebgpu =
 
 					class StorageBlock3
 					{
-						constructor (data, binding, size)
+						constructor (_data, binding, buffer_size = _data.byteLength, resource_size = _data.byteLength)
 						{
 							const buffer =
 								renderer.device.createBuffer
 								({
-									size: data.byteLength,
+									size: buffer_size,
 
 									usage:
 									(
@@ -335,9 +335,9 @@ const getWebgpu =
 							(
 								buffer,
 								0,
-								data,
+								_data,
 								0,
-								data.length,
+								_data.length,
 							);
 
 							this.entry =
@@ -348,7 +348,7 @@ const getWebgpu =
 								{
 									buffer,
 									offset: 0,
-									size,
+									size: resource_size,
 								},
 							};
 
@@ -357,7 +357,6 @@ const getWebgpu =
 							{
 								binding,
 
-								// !
 								visibility:
 								(
 									global.GPUShaderStage.FRAGMENT |
