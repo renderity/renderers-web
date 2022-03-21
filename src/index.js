@@ -147,9 +147,9 @@ export default class Renderers
 				return (this.addr + offset);
 			}
 
-			updateStdVectorData (member_name, _data)
+			updateStdVectorData (member_name, _type, _data)
 			{
-				wasm_wrapper.updateStdVectorData(this.getMemberAddr(member_name), _data);
+				wasm_wrapper.updateStdVectorData(this.getMemberAddr(member_name), _type, _data);
 
 				const type = this.constructor.original_struct_descriptor[member_name];
 
