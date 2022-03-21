@@ -980,16 +980,28 @@ const getWebgpu =
 							);
 						}
 
+						// draw2 ()
+						// {
+						// 	renderer.render_pass_encoder.draw
+						// 	(this.original_struct.position_data.length / 3, 1, 0, 0);
+						// }
+
+						// drawIndexed2 ()
+						// {
+						// 	renderer.render_pass_encoder.drawIndexed
+						// 	(this.original_struct.index_data.length / 3, 1, 0, 0, 0);
+						// }
+
 						draw2 ()
 						{
 							renderer.render_pass_encoder.draw
-							(this.original_struct.position_data.length / 3, 1, 0, 0);
+							(this.original_struct.position_data.length, 1, 0, 0);
 						}
 
 						drawIndexed2 ()
 						{
 							renderer.render_pass_encoder.drawIndexed
-							(this.original_struct.index_data.length / 3, 1, 0, 0, 0);
+							(this.original_struct.index_data.length, 1, 0, 0, 0);
 						}
 
 						createBuffers ()
@@ -1107,82 +1119,17 @@ const getWebgpu =
 
 						makeDescriptorSet (bindings = [])
 						{
-							this.position_buffer2 =
-								renderer.device.createBuffer
-								({
-									size: this.original_struct.position_data.byteLength,
-
-									usage:
-									(
-										window.GPUBufferUsage.COPY_DST |
-										window.GPUBufferUsage.STORAGE
-									),
-								});
-
-							renderer.gpu_resources.push(this.position_buffer2);
-
-							renderer.device.queue.writeBuffer
-							(
-								this.position_buffer2,
-								0,
-								this.original_struct.position_data,
-								0,
-								this.original_struct.position_data.length,
-							);
-
-							this.position_storage_block =
-								new StorageBlock2
-								(
-									this.position_buffer2,
-									0,
-									this.original_struct.position_data.byteLength,
-								);
-
-
-
-							this.index_buffer2 =
-								renderer.device.createBuffer
-								({
-									size: this.original_struct.index_data.byteLength,
-
-									usage:
-									(
-										window.GPUBufferUsage.COPY_DST |
-										window.GPUBufferUsage.STORAGE
-									),
-								});
-
-							renderer.gpu_resources.push(this.index_buffer2);
-
-							renderer.device.queue.writeBuffer
-							(
-								this.index_buffer2,
-								0,
-								this.original_struct.index_data,
-								0,
-								this.original_struct.index_data.length,
-							);
-
-							this.index_storage_block =
-								new StorageBlock2
-								(
-									this.index_buffer2,
-									2,
-									this.original_struct.index_data.byteLength,
-								);
-
-
+							this.position_storage_block = new StorageBlock3(this.original_struct.position_data, 0);
+							this.index_storage_block = new StorageBlock3(this.original_struct.index_data, 2);
 
 							this.descriptor_set =
 								new DescriptorSet2
-								(
-									[
-										this.position_storage_block,
-										this.index_storage_block,
+								([
+									this.position_storage_block,
+									this.index_storage_block,
 
-										...bindings,
-									],
-								);
+									...bindings,
+								]);
 						}
 					}
 
@@ -1266,6 +1213,7 @@ const getWebgpu =
 
 					this.Uniform.instances = null;
 					this.UniformBlock.instances = null;
+					this.StorageBlock.instances = null;
 					this.DescriptorSet.instances = null;
 					this.Material.instances = null;
 				}
