@@ -181,7 +181,13 @@ const getWebgpu =
 								// So it is recommended for updating small amounts of data.
 								// May be keep buffer mapped and apdate data with TypedArray.set?
 								renderer.device.queue.writeBuffer
-								(this.buffer, uniform.original_struct.block_index, uniform._data, 0, uniform._data.length);
+								(
+									this.buffer,
+									uniform.original_struct.block_index,
+									uniform._data,
+									0,
+									uniform._data.length,
+								);
 							}
 						}
 					}
