@@ -266,8 +266,8 @@ export default class Renderers
 					type: 'SizeT',
 					binding: 'SizeT',
 					name: 'StdString',
-					uniforms: 'StdVectorAddr',
 					visibility: 'StdVectorSizeT',
+					uniforms: 'StdVectorAddr',
 				};
 
 			static original_struct_offsets =
