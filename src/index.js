@@ -493,6 +493,7 @@ export default class Renderers
 				{
 					position_data: 'StdVectorFloat',
 					index_data: 'StdVectorUint32',
+					objects: 'StdVectorAddr',
 				};
 
 			static original_struct_offsets =
