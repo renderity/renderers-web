@@ -214,12 +214,12 @@ const getWebgl =
 								if (renderer._context.constructor === WebGLRenderingContext)
 								{
 									code =
-									WasmWrapper.convertUint8ArrayToDomString(this.original_struct.glsl100es_code_vertex).trim();
+									WasmWrapper.convertUint8ArrayToDomString(this.original_struct.code_glsl100es_vertex).trim();
 								}
 								else if (renderer._context.constructor === WebGL2RenderingContext)
 								{
 									code =
-									WasmWrapper.convertUint8ArrayToDomString(this.original_struct.glsl300es_code_vertex).trim();
+									WasmWrapper.convertUint8ArrayToDomString(this.original_struct.code_glsl300es_vertex).trim();
 								}
 
 								const shader = gl.createShader(gl.VERTEX_SHADER);
@@ -250,12 +250,12 @@ const getWebgl =
 								if (renderer._context.constructor === WebGLRenderingContext)
 								{
 									code =
-									WasmWrapper.convertUint8ArrayToDomString(this.original_struct.glsl100es_code_fragment).trim();
+									WasmWrapper.convertUint8ArrayToDomString(this.original_struct.code_glsl100es_fragment).trim();
 								}
 								else if (renderer._context.constructor === WebGL2RenderingContext)
 								{
 									code =
-									WasmWrapper.convertUint8ArrayToDomString(this.original_struct.glsl300es_code_fragment).trim();
+									WasmWrapper.convertUint8ArrayToDomString(this.original_struct.code_glsl300es_fragment).trim();
 								}
 
 								const shader = gl.createShader(gl.FRAGMENT_SHADER);
