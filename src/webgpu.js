@@ -980,29 +980,29 @@ const getWebgpu =
 							);
 						}
 
-						// draw2 ()
-						// {
-						// 	renderer.render_pass_encoder.draw
-						// 	(this.original_struct.position_data.length / 3, 1, 0, 0);
-						// }
-
-						// drawIndexed2 ()
-						// {
-						// 	renderer.render_pass_encoder.drawIndexed
-						// 	(this.original_struct.index_data.length / 3, 1, 0, 0, 0);
-						// }
-
 						draw2 ()
 						{
 							renderer.render_pass_encoder.draw
-							(this.original_struct.position_data.length, 1, 0, 0);
+							(this.original_struct.position_data.length / 3, 1, 0, 0);
 						}
 
 						drawIndexed2 ()
 						{
 							renderer.render_pass_encoder.drawIndexed
-							(this.original_struct.index_data.length, 1, 0, 0, 0);
+							(this.original_struct.index_data.length / 3, 1, 0, 0, 0);
 						}
+
+						// draw2 ()
+						// {
+						// 	renderer.render_pass_encoder.draw
+						// 	(this.original_struct.position_data.length, 1, 0, 0);
+						// }
+
+						// drawIndexed2 ()
+						// {
+						// 	renderer.render_pass_encoder.drawIndexed
+						// 	(this.original_struct.index_data.length, 1, 0, 0, 0);
+						// }
 
 						createBuffers ()
 						{
