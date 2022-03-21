@@ -11,34 +11,61 @@ export default class Renderers
 
 		const WasmWrapper = this.wasm_wrapper.constructor;
 
+		const renderers = this;
+
 
 
 		class Base
 		{
+			static instances_base = null;
 			static instances = null;
 
 			static getInstance (addr, ...args)
 			{
-				// if (!this.instances)
-				// {
-				// 	this.instances = {};
-				// }
+				const base = renderers[`${ this.name }Base`.replace('_', '')];
 
-				// if (!this.instances[addr])
-				// {
-				// 	Object.defineProperty
-				// 	(
-				// 		this.instances,
+				if (base)
+				{
+					if (!this.instances)
+					{
+						this.instances = {};
+					}
 
-				// 		addr,
+					if (!this.instances[addr])
+					{
+						Object.defineProperty
+						(
+							this.instances,
 
-				// 		{ value: new this(addr, ...args) },
-				// 	);
-				// }
+							addr,
 
-				// return this.instances[addr];
+							{ value: new this(base?.instances_base?.[addr] || addr, ...args) },
+						);
+					}
 
-				return new this(addr, ...args);
+					return this.instances[addr];
+				}
+
+
+
+				if (!this.instances_base)
+				{
+					this.instances_base = {};
+				}
+
+				if (!this.instances_base[addr])
+				{
+					Object.defineProperty
+					(
+						this.instances_base,
+
+						addr,
+
+						{ value: new this(addr, ...args) },
+					);
+				}
+
+				return this.instances_base[addr];
 			}
 
 			static getOriginalStructOffsets (name)
@@ -55,46 +82,80 @@ export default class Renderers
 
 			static getOriginalStruct (addr)
 			{
-				switch (typeof addr)
-				{
-				case 'number':
-				{
-					const original_struct = {};
+				const original_struct = {};
 
-					let member_index = 0;
+				let member_index = 0;
 
-					for (const member_name in this.original_struct_descriptor)
+				for (const member_name in this.original_struct_descriptor)
+				{
+					let type = this.original_struct_descriptor[member_name];
+
+					if (Array.isArray(type))
 					{
-						const type = this.original_struct_descriptor[member_name];
+						let size = 0;
+
+						[ type, size ] = type;
 
 						original_struct[member_name] =
+							wasm_wrapper[type](addr + this.original_struct_offsets[member_index], size);
+					}
+					else
+					{
+						original_struct[member_name] =
 							wasm_wrapper[type](addr + this.original_struct_offsets[member_index]);
-
-						++member_index;
 					}
 
-					return original_struct;
+					++member_index;
 				}
 
-				case 'object':
-				{
-					return addr;
-				}
-
-				default:
-				{
-					throw new Error('RDTY: Invalid argument.');
-				}
-				}
+				return original_struct;
 			}
 
 
 
-			constructor (addr)
+			constructor (input)
 			{
-				this.addr = addr;
+				// input is addres
+				if (typeof input === 'number')
+				{
+					this.addr = input;
 
-				this.original_struct = this.constructor.getOriginalStruct(this.addr);
+					this.original_struct = this.constructor.getOriginalStruct(this.addr);
+				}
+				// input is base object
+				else
+				{
+					Object.assign(this, input);
+				}
+			}
+
+			getBitMask (parameter, values)
+			{
+				const result =
+					this.original_struct[parameter]
+						.reduce((prev, curr) => (prev | values[curr]), 0);
+
+				return result;
+			}
+
+			getMemberAddr (name)
+			{
+				const offset =
+					this.constructor.original_struct_offsets
+						[Object.keys(this.constructor.original_struct_descriptor).indexOf(name)];
+
+				return (this.addr + offset);
+			}
+
+			updateStdVectorData (member_name, _data)
+			{
+				wasm_wrapper.updateStdVectorData(this.getMemberAddr(member_name), _data);
+
+				const type = this.constructor.original_struct_descriptor[member_name];
+
+				this.original_struct[member_name] =
+					wasm_wrapper[type]
+					(this.addr + this.constructor.original_struct_offsets[Object.keys(this.constructor.original_struct_descriptor).indexOf(member_name)]);
 			}
 		}
 
