@@ -701,8 +701,8 @@ const getWebgpu =
 								{
 									// Wrap spirv code Uint32Array to another Uint32Array
 									// since the provided array must not be shared.
-									code_vertex = new Uint32Array(this.original_struct.spirv_code_vertex);
-									code_fragment = new Uint32Array(this.original_struct.spirv_code_fragment);
+									code_vertex = new Uint32Array(this.original_struct.code_spirv_vertex);
+									code_fragment = new Uint32Array(this.original_struct.code_spirv_fragment);
 
 									break;
 								}
@@ -712,7 +712,7 @@ const getWebgpu =
 									{
 										const code_glsl =
 											WasmWrapper.convertUint8ArrayToDomString
-											(this.original_struct.glsl_vulkan_code_vertex);
+											(this.original_struct.code_glsl_vertex);
 
 										try
 										{
@@ -735,7 +735,7 @@ const getWebgpu =
 									{
 										const code_glsl =
 											WasmWrapper.convertUint8ArrayToDomString
-											(this.original_struct.glsl_vulkan_code_fragment);
+											(this.original_struct.code_glsl_fragment);
 
 										try
 										{
@@ -761,11 +761,11 @@ const getWebgpu =
 								{
 									code_vertex =
 										WasmWrapper.convertUint8ArrayToDomString
-										(this.original_struct.wgsl_code_vertex);
+										(this.original_struct.code_wgsl_vertex);
 
 									code_fragment =
 										WasmWrapper.convertUint8ArrayToDomString
-										(this.original_struct.wgsl_code_fragment);
+										(this.original_struct.code_wgsl_fragment);
 
 									break;
 								}
@@ -864,7 +864,7 @@ const getWebgpu =
 								{
 								case Material.ShaderUsage.SPIRV:
 								{
-									code = new Uint32Array(this.original_struct.spirv_code_compute);
+									code = new Uint32Array(this.original_struct.code_spirv_compute);
 
 									break;
 								}
@@ -873,7 +873,7 @@ const getWebgpu =
 								{
 									const code_glsl =
 										WasmWrapper.convertUint8ArrayToDomString
-										(this.original_struct.glsl_vulkan_code_compute);
+										(this.original_struct.code_glsl_compute);
 
 									try
 									{
@@ -898,7 +898,7 @@ const getWebgpu =
 								{
 									code =
 										WasmWrapper.convertUint8ArrayToDomString
-										(this.original_struct.wgsl_code_compute);
+										(this.original_struct.code_wgsl_compute);
 
 									break;
 								}
