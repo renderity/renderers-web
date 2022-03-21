@@ -455,6 +455,8 @@ export default class Renderers
 					scene_index_data_offset: 'SizeT',
 					scene_index_data_length: 'SizeT',
 					index_data: 'StdVectorUint32',
+					bounding_box_min: [ 'Floatv', 3 ],
+					bounding_box_max: [ 'Floatv', 3 ],
 				};
 
 			static original_struct_offsets =
@@ -462,26 +464,23 @@ export default class Renderers
 
 
 
-			updateVertexData (_data)
-			{
-				// TODO: cache this
-				const offset =
-					this.constructor.original_struct_offsets
-						[Object.keys(this.constructor.original_struct_descriptor).indexOf('position_data')];
+			// updateData (name, _data)
+			// {
+			// 	// TODO: cache this
+			// 	const addr = this.getMemberAddr(name);
 
-				wasm_wrapper.exports.RDTY_WASM_WRAPPER_StdVector_resize(this.addr + offset, _data.length);
-				wasm_wrapper.StdVectorFloat(this.addr + offset).set(_data);
-			}
+			// 	wasm_wrapper.updateStdVectorData(addr, _data);
+			// }
 
-			updateIndexData (_data)
-			{
-				const offset =
-					this.constructor.original_struct_offsets
-						[Object.keys(this.constructor.original_struct_descriptor).indexOf('index_data')];
+			// updateIndexData (_data)
+			// {
+			// 	const offset =
+			// 		this.constructor.original_struct_offsets
+			// 			[Object.keys(this.constructor.original_struct_descriptor).indexOf('index_data')];
 
-				wasm_wrapper.exports.RDTY_WASM_WRAPPER_StdVector_resize(this.addr + offset, _data.length);
-				wasm_wrapper.StdVectorUint32(this.addr + offset).set(_data);
-			}
+			// 	wasm_wrapper.exports.RDTY_WASM_WRAPPER_StdVector_resize(this.addr + offset, _data.length);
+			// 	wasm_wrapper.StdVectorUint32(this.addr + offset).set(_data);
+			// }
 		}
 
 		this.ObjectBase = ObjectBase;
