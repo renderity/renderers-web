@@ -267,6 +267,7 @@ export default class Renderers
 					binding: 'SizeT',
 					name: 'StdString',
 					uniforms: 'StdVectorAddr',
+					visibility: 'StdVectorSizeT',
 				};
 
 			static original_struct_offsets =
