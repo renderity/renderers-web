@@ -94,6 +94,18 @@ const getWebgpu =
 
 
 
+					class DescriptorBinding
+					{
+						static VISIBILITY =
+							[
+								global.GPUShaderStage.VERTEX,
+								global.GPUShaderStage.FRAGMENT,
+								global.GPUShaderStage.COMPUTE,
+							];
+					}
+
+
+
 					class UniformBlock extends UniformBlockBase
 					{
 						constructor (addr)
@@ -109,7 +121,6 @@ const getWebgpu =
 								({
 									size: this.buffer_length,
 
-									// !
 									usage:
 									(
 										global.GPUBufferUsage.COPY_DST |
@@ -140,12 +151,7 @@ const getWebgpu =
 							{
 								binding: this.original_struct.binding,
 
-								// !
-								visibility:
-								(
-									global.GPUShaderStage.VERTEX |
-									global.GPUShaderStage.FRAGMENT
-								),
+								visibility: this.getBitMask('visibility', DescriptorBinding.VISIBILITY),
 
 								buffer:
 								{
@@ -227,12 +233,7 @@ const getWebgpu =
 							{
 								binding: this.original_struct.binding,
 
-								// !
-								visibility:
-								(
-									global.GPUShaderStage.FRAGMENT |
-									global.GPUShaderStage.COMPUTE
-								),
+								visibility: this.getBitMask('visibility', DescriptorBinding.VISIBILITY),
 
 								buffer:
 								{
@@ -281,7 +282,6 @@ const getWebgpu =
 							{
 								binding,
 
-								// !
 								visibility:
 								(
 									global.GPUShaderStage.FRAGMENT |
