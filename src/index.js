@@ -494,6 +494,8 @@ export default class Renderers
 					position_data: 'StdVectorFloat',
 					index_data: 'StdVectorUint32',
 					objects: 'StdVectorAddr',
+					boxes: [ 'Uint32v', 1024 * 1024 * 8 ],
+					triangles: [ 'Uint32v', 1024 * 1024 ],
 				};
 
 			static original_struct_offsets =
