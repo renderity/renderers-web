@@ -44,11 +44,11 @@ const getWebgl =
 
 					this.canvas = canvas || document.createElement('canvas');
 
-					this.canvas.width = this.original_struct.width;
-					this.canvas.height = this.original_struct.height;
+					this.canvas.width = this.original_struct.width[0];
+					this.canvas.height = this.original_struct.height[0];
 
-					this.canvas.style.width = `${ this.original_struct.width }px`;
-					this.canvas.style.height = `${ this.original_struct.height }px`;
+					this.canvas.style.width = `${ this.original_struct.width[0] }px`;
+					this.canvas.style.height = `${ this.original_struct.height[0] }px`;
 
 					this._context = this.canvas.getContext(_context);
 
@@ -72,7 +72,7 @@ const getWebgl =
 
 					const gl = this._context;
 
-					gl.viewport(0, 0, this.original_struct.width, this.original_struct.height);
+					gl.viewport(0, 0, this.original_struct.width[0], this.original_struct.height[0]);
 
 
 
@@ -87,7 +87,7 @@ const getWebgl =
 							this.location = null;
 
 							// TODO: add multiple typed data initializers.
-							this.typed_data = wasm_wrapper.Floatv(this.object_addr, this.size / 4);
+							this.typed_data = wasm_wrapper.Float(this.object_addr, this.size / 4);
 						}
 					}
 
@@ -185,10 +185,11 @@ const getWebgl =
 
 
 
+							// TODO: Replace null with something!
 							if
 							(
-								this.original_struct.blend_color_op === null ||
-								this.original_struct.blend_alpha_op === null
+								this.original_struct.blend_color_op[0] === null ||
+								this.original_struct.blend_alpha_op[0] === null
 							)
 							{
 								// LOG('Enable "EXT_blend_minmax" extension!');

@@ -71,7 +71,7 @@ export default class Renderers
 			static getOriginalStructOffsets (name)
 			{
 				const offsets =
-					wasm_wrapper.SizeTv
+					wasm_wrapper.Size
 					(
 						wasm_wrapper.exports_demangled[name],
 						Object.keys(this.original_struct_descriptor).length,
@@ -151,6 +151,8 @@ export default class Renderers
 			{
 				wasm_wrapper.updateStdVectorData(this.getMemberAddr(member_name), _type, _data);
 
+				// Need to reassign original_struct member
+				// since std::vector::resize() returns different addres of new data.
 				const type = this.constructor.original_struct_descriptor[member_name];
 
 				this.original_struct[member_name] =
@@ -165,8 +167,8 @@ export default class Renderers
 		{
 			static original_struct_descriptor =
 				{
-					width: 'SizeT',
-					height: 'SizeT',
+					width: 'Size',
+					height: 'Size',
 				};
 
 			static original_struct_offsets =
@@ -180,8 +182,8 @@ export default class Renderers
 
 
 
-				this.width = this.original_struct.width;
-				this.height = this.original_struct.height;
+				this.width = this.original_struct.width[0];
+				this.height = this.original_struct.height[0];
 			}
 
 			appendFpsCounter ()
@@ -234,8 +236,8 @@ export default class Renderers
 					object_addr: 'Addr',
 					name: 'StdString',
 					// TODO: rename to offset
-					block_index: 'SizeT',
-					size: 'SizeT',
+					block_index: 'Size',
+					size: 'Size',
 				};
 
 			static original_struct_offsets =
@@ -251,7 +253,7 @@ export default class Renderers
 
 				this.name = WasmWrapper.convertUint8ArrayToDomString(this.original_struct.name);
 
-				this._data = wasm_wrapper.Charv2(this.original_struct.object_addr, this.original_struct.size);
+				this._data = wasm_wrapper.Uint8(this.original_struct.object_addr[0], this.original_struct.size[0]);
 			}
 		}
 
@@ -263,10 +265,10 @@ export default class Renderers
 		{
 			static original_struct_descriptor =
 				{
-					type: 'SizeT',
-					binding: 'SizeT',
+					type: 'Size',
+					binding: 'Size',
 					name: 'StdString',
-					visibility: 'StdVectorSizeT',
+					visibility: 'StdVectorSize',
 					uniforms: 'StdVectorAddr',
 				};
 
@@ -321,11 +323,11 @@ export default class Renderers
 		{
 			static original_struct_descriptor =
 				{
-					type: 'SizeT',
-					binding: 'SizeT',
+					type: 'Size',
+					binding: 'Size',
 					name: 'StdString',
 					_data: 'Addr',
-					size: 'SizeT',
+					size: 'Size',
 				};
 
 			static original_struct_offsets =
@@ -341,7 +343,7 @@ export default class Renderers
 
 				this.name = WasmWrapper.convertUint8ArrayToDomString(this.original_struct.name);
 
-				this._data = wasm_wrapper.Charv2(this.original_struct._data, this.original_struct.size);
+				this._data = wasm_wrapper.Uint8(this.original_struct._data, this.original_struct.size[0]);
 
 
 
@@ -372,15 +374,15 @@ export default class Renderers
 		{
 			static original_struct_descriptor =
 				{
-					topology: 'SizeT',
-					front_face: 'SizeT',
-					blend_enabled: 'SizeT',
-					blend_color_op: 'SizeT',
-					blend_color_factor_src: 'SizeT',
-					blend_color_factor_dst: 'SizeT',
-					blend_alpha_op: 'SizeT',
-					blend_alpha_factor_src: 'SizeT',
-					blend_alpha_factor_dst: 'SizeT',
+					topology: 'Size',
+					front_face: 'Size',
+					blend_enabled: 'Size',
+					blend_color_op: 'Size',
+					blend_color_factor_src: 'Size',
+					blend_color_factor_dst: 'Size',
+					blend_alpha_op: 'Size',
+					blend_alpha_factor_src: 'Size',
+					blend_alpha_factor_dst: 'Size',
 					code_glsl100es_vertex: 'StdString',
 					code_glsl100es_fragment: 'StdString',
 					code_glsl300es_vertex: 'StdString',
@@ -412,29 +414,29 @@ export default class Renderers
 
 
 
-				this.topology = this.constructor.TOPOLOGY[this.original_struct.topology];
+				this.topology = this.constructor.TOPOLOGY[this.original_struct.topology[0]];
 
-				this.front_face = this.constructor.FRONT_FACE[this.original_struct.front_face];
+				this.front_face = this.constructor.FRONT_FACE[this.original_struct.front_face[0]];
 
-				this.blend_enabled = this.constructor.BLEND_ENABLED[this.original_struct.blend_enabled];
+				this.blend_enabled = this.constructor.BLEND_ENABLED[this.original_struct.blend_enabled[0]];
 
 				this.blend_color_op =
-					this.constructor.BLEND_OP[this.original_struct.blend_color_op];
+					this.constructor.BLEND_OP[this.original_struct.blend_color_op[0]];
 
 				this.blend_color_factor_src =
-					this.constructor.BLEND_FACTOR[this.original_struct.blend_color_factor_src];
+					this.constructor.BLEND_FACTOR[this.original_struct.blend_color_factor_src[0]];
 
 				this.blend_color_factor_dst =
-					this.constructor.BLEND_FACTOR[this.original_struct.blend_color_factor_dst];
+					this.constructor.BLEND_FACTOR[this.original_struct.blend_color_factor_dst[0]];
 
 				this.blend_alpha_op =
-					this.constructor.BLEND_OP[this.original_struct.blend_alpha_op];
+					this.constructor.BLEND_OP[this.original_struct.blend_alpha_op[0]];
 
 				this.blend_alpha_factor_src =
-					this.constructor.BLEND_FACTOR[this.original_struct.blend_alpha_factor_src];
+					this.constructor.BLEND_FACTOR[this.original_struct.blend_alpha_factor_src[0]];
 
 				this.blend_alpha_factor_dst =
-					this.constructor.BLEND_FACTOR[this.original_struct.blend_alpha_factor_dst];
+					this.constructor.BLEND_FACTOR[this.original_struct.blend_alpha_factor_dst[0]];
 
 				// this.uniforms
 				// this.uniform_blocks
@@ -449,14 +451,14 @@ export default class Renderers
 		{
 			static original_struct_descriptor =
 				{
-					scene_position_data_offset: 'SizeT',
-					scene_position_data_length: 'SizeT',
+					scene_position_data_offset: 'Size',
+					scene_position_data_length: 'Size',
 					position_data: 'StdVectorFloat',
-					scene_index_data_offset: 'SizeT',
-					scene_index_data_length: 'SizeT',
+					scene_index_data_offset: 'Size',
+					scene_index_data_length: 'Size',
 					index_data: 'StdVectorUint32',
-					bounding_box_min: [ 'Floatv', 3 ],
-					bounding_box_max: [ 'Floatv', 3 ],
+					bounding_box_min: [ 'Float', 3 ],
+					bounding_box_max: [ 'Float', 3 ],
 				};
 
 			static original_struct_offsets =
@@ -494,8 +496,8 @@ export default class Renderers
 					position_data: 'StdVectorFloat',
 					index_data: 'StdVectorUint32',
 					objects: 'StdVectorAddr',
-					boxes: [ 'Uint32v', 1024 * 1024 * 8 ],
-					triangles: [ 'Uint32v', 1024 * 1024 ],
+					boxes: [ 'Uint32', 1024 * 1024 * 8 ],
+					triangles: [ 'Uint32', 1024 * 1024 ],
 				};
 
 			static original_struct_offsets =

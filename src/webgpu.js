@@ -49,11 +49,11 @@ const getWebgpu =
 
 					this.canvas = options.canvas || document.createElement('canvas');
 
-					this.canvas.width = this.original_struct.width;
-					this.canvas.height = this.original_struct.height;
+					this.canvas.width = this.original_struct.width[0];
+					this.canvas.height = this.original_struct.height[0];
 
-					this.canvas.style.width = `${ this.original_struct.width }px`;
-					this.canvas.style.height = `${ this.original_struct.height }px`;
+					this.canvas.style.width = `${ this.original_struct.width[0] }px`;
+					this.canvas.style.height = `${ this.original_struct.height[0] }px`;
 
 					this._context = this.canvas.getContext('webgpu');
 
@@ -136,7 +136,7 @@ const getWebgpu =
 
 							this.entry =
 							{
-								binding: this.original_struct.binding,
+								binding: this.original_struct.binding[0],
 
 								resource:
 								{
@@ -149,7 +149,7 @@ const getWebgpu =
 							// rename to layout
 							this.entry_layout =
 							{
-								binding: this.original_struct.binding,
+								binding: this.original_struct.binding[0],
 
 								visibility: this.getBitMask('visibility', DescriptorBinding.VISIBILITY),
 
@@ -183,7 +183,7 @@ const getWebgpu =
 								renderer.device.queue.writeBuffer
 								(
 									this.buffer,
-									uniform.original_struct.block_index,
+									uniform.original_struct.block_index[0],
 									uniform._data,
 									0,
 									uniform._data.length,
@@ -207,7 +207,7 @@ const getWebgpu =
 							this.buffer =
 								renderer.device.createBuffer
 								({
-									size: this.original_struct.size,
+									size: this.original_struct.size[0],
 
 									usage:
 									(
@@ -224,20 +224,20 @@ const getWebgpu =
 
 							this.entry =
 							{
-								binding: this.original_struct.binding,
+								binding: this.original_struct.binding[0],
 
 								resource:
 								{
 									buffer: this.buffer,
 									offset: 0,
-									size: this.original_struct.size,
+									size: this.original_struct.size[0],
 								},
 							};
 
 							// rename to layout
 							this.entry_layout =
 							{
-								binding: this.original_struct.binding,
+								binding: this.original_struct.binding[0],
 
 								visibility: this.getBitMask('visibility', DescriptorBinding.VISIBILITY),
 
@@ -422,7 +422,7 @@ const getWebgpu =
 
 									switch
 									(
-										wasm_wrapper.SizeT
+										wasm_wrapper.Size
 										(
 											binding_addr +
 											UniformBlock.original_struct_offsets
@@ -961,9 +961,9 @@ const getWebgpu =
 						{
 							renderer.render_pass_encoder.draw
 							(
-								this.original_struct.scene_position_data_length,
+								this.original_struct.scene_position_data_length[0],
 								1,
-								this.original_struct.scene_position_data_offset,
+								this.original_struct.scene_position_data_offset[0],
 								0,
 							);
 						}
@@ -972,9 +972,9 @@ const getWebgpu =
 						{
 							renderer.render_pass_encoder.drawIndexed
 							(
-								this.original_struct.scene_index_data_length,
+								this.original_struct.scene_index_data_length[0],
 								1,
-								this.original_struct.scene_index_data_offset,
+								this.original_struct.scene_index_data_offset[0],
 								0,
 								0,
 							);
@@ -1169,8 +1169,8 @@ const getWebgpu =
 
 						size:
 						{
-							width: this.original_struct.width,
-							height: this.original_struct.height,
+							width: this.original_struct.width[0],
+							height: this.original_struct.height[0],
 							depthOrArrayLayers: 1,
 						},
 						// size: [ 800, 600 ],
