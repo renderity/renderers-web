@@ -420,15 +420,7 @@ const getWebgpu =
 								{
 									let binding = null;
 
-									switch
-									(
-										wasm_wrapper.Size
-										(
-											binding_addr +
-											UniformBlock.original_struct_offsets
-												[Object.keys(UniformBlock.original_struct_descriptor).indexOf('type')],
-										)
-									)
+									switch (wasm_wrapper.Size(this.getMemberAddr('type')))
 									{
 									case DescriptorSet.BINDING_TYPE.UNIFORM_BLOCK:
 									{
@@ -701,8 +693,8 @@ const getWebgpu =
 								{
 									// Wrap spirv code Uint32Array to another Uint32Array
 									// since the provided array must not be shared.
-									code_vertex = new Uint32Array(this.original_struct.code_spirv_vertex);
-									code_fragment = new Uint32Array(this.original_struct.code_spirv_fragment);
+									code_vertex = new Uint32Array(this.original_struct.code_vertex_spirv);
+									code_fragment = new Uint32Array(this.original_struct.code_fragment_spirv);
 
 									break;
 								}
@@ -712,7 +704,7 @@ const getWebgpu =
 									{
 										const code_glsl =
 											WasmWrapper.convertUint8ArrayToDomString
-											(this.original_struct.code_glsl_vertex);
+											(this.original_struct.code_vertex_glsl);
 
 										try
 										{
@@ -735,7 +727,7 @@ const getWebgpu =
 									{
 										const code_glsl =
 											WasmWrapper.convertUint8ArrayToDomString
-											(this.original_struct.code_glsl_fragment);
+											(this.original_struct.code_fragment_glsl);
 
 										try
 										{
@@ -761,11 +753,11 @@ const getWebgpu =
 								{
 									code_vertex =
 										WasmWrapper.convertUint8ArrayToDomString
-										(this.original_struct.code_wgsl_vertex);
+										(this.original_struct.code_vertex_wgsl);
 
 									code_fragment =
 										WasmWrapper.convertUint8ArrayToDomString
-										(this.original_struct.code_wgsl_fragment);
+										(this.original_struct.code_fragment_wgsl);
 
 									break;
 								}
@@ -873,7 +865,7 @@ const getWebgpu =
 								{
 									const code_glsl =
 										WasmWrapper.convertUint8ArrayToDomString
-										(this.original_struct.code_glsl_compute);
+										(this.original_struct.code_compute_glsl);
 
 									try
 									{

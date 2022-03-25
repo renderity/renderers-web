@@ -70,45 +70,18 @@ export default class Renderers
 
 			static getOriginalStructOffsets (name)
 			{
+				const orignial_struct_members = Object.keys(this.original_struct_descriptor);
+
 				const offsets =
 					wasm_wrapper.Size
 					(
 						wasm_wrapper.exports_demangled[name],
-						Object.keys(this.original_struct_descriptor).length,
-					);
+
+						orignial_struct_members.length,
+					)
+						.reduce((acc, offset, i) => ((acc[orignial_struct_members[i]] = offset), acc), {});
 
 				return offsets;
-			}
-
-			static getOriginalStruct (addr)
-			{
-				const original_struct = {};
-
-				let member_index = 0;
-
-				for (const member_name in this.original_struct_descriptor)
-				{
-					let type = this.original_struct_descriptor[member_name];
-
-					if (Array.isArray(type))
-					{
-						let size = 0;
-
-						[ type, size ] = type;
-
-						original_struct[member_name] =
-							wasm_wrapper[type](addr + this.original_struct_offsets[member_index], size);
-					}
-					else
-					{
-						original_struct[member_name] =
-							wasm_wrapper[type](addr + this.original_struct_offsets[member_index]);
-					}
-
-					++member_index;
-				}
-
-				return original_struct;
 			}
 
 
@@ -120,13 +93,45 @@ export default class Renderers
 				{
 					this.addr = input;
 
-					this.original_struct = this.constructor.getOriginalStruct(this.addr);
+					this.original_struct = this.getOriginalStruct();
 				}
 				// input is base object
 				else
 				{
 					Object.assign(this, input);
 				}
+			}
+
+			getMemberAddr (name)
+			{
+				const offset = this.constructor.original_struct_offsets[name];
+
+				return (this.addr + offset);
+			}
+
+			getOriginalStruct ()
+			{
+				const original_struct = {};
+
+				for (const member_name in this.constructor.original_struct_descriptor)
+				{
+					let type = this.constructor.original_struct_descriptor[member_name];
+
+					if (Array.isArray(type))
+					{
+						let size = 0;
+
+						[ type, size ] = type;
+
+						original_struct[member_name] = wasm_wrapper[type](this.getMemberAddr(member_name), size);
+					}
+					else
+					{
+						original_struct[member_name] = wasm_wrapper[type](this.getMemberAddr(member_name));
+					}
+				}
+
+				return original_struct;
 			}
 
 			getBitMask (parameter, values)
@@ -138,26 +143,17 @@ export default class Renderers
 				return result;
 			}
 
-			getMemberAddr (name)
-			{
-				const offset =
-					this.constructor.original_struct_offsets
-						[Object.keys(this.constructor.original_struct_descriptor).indexOf(name)];
-
-				return (this.addr + offset);
-			}
-
 			updateStdVectorData (member_name, _type, _data)
 			{
-				wasm_wrapper.updateStdVectorData(this.getMemberAddr(member_name), _type, _data);
+				const member_addr = this.getMemberAddr(member_name);
+
+				wasm_wrapper.updateStdVectorData(member_addr, _type, _data);
 
 				// Need to reassign original_struct member
 				// since std::vector::resize() returns different addres of new data.
 				const type = this.constructor.original_struct_descriptor[member_name];
 
-				this.original_struct[member_name] =
-					wasm_wrapper[type]
-					(this.addr + this.constructor.original_struct_offsets[Object.keys(this.constructor.original_struct_descriptor).indexOf(member_name)]);
+				this.original_struct[member_name] = wasm_wrapper[type](member_addr);
 			}
 		}
 
@@ -383,19 +379,17 @@ export default class Renderers
 					blend_alpha_op: 'Size',
 					blend_alpha_factor_src: 'Size',
 					blend_alpha_factor_dst: 'Size',
-					code_glsl100es_vertex: 'StdString',
-					code_glsl100es_fragment: 'StdString',
-					code_glsl300es_vertex: 'StdString',
-					code_glsl300es_fragment: 'StdString',
-					// code_glsl_vertex: 'StdString',
-					// code_glsl_fragment: 'StdString',
-					code_glsl_vertex: 'StdString',
-					code_glsl_fragment: 'StdString',
-					// code_glsl_compute: 'StdString',
-					code_wgsl_vertex: 'StdString',
-					code_wgsl_fragment: 'StdString',
-					code_spirv_vertex: 'StdVectorUint32',
-					code_spirv_fragment: 'StdVectorUint32',
+					code_vertex_glsl: 'StdString',
+					code_vertex_glsl100es: 'StdString',
+					code_vertex_glsl300es: 'StdString',
+					code_vertex_wgsl: 'StdString',
+					code_vertex_spirv: 'StdVectorUint32',
+					code_fragment_glsl: 'StdString',
+					code_fragment_glsl100es: 'StdString',
+					code_fragment_glsl300es: 'StdString',
+					code_fragment_wgsl: 'StdString',
+					code_fragment_spirv: 'StdVectorUint32',
+					// code_compute_glsl: 'StdString',
 					uniforms: 'StdVectorAddr',
 					uniform_blocks: 'StdVectorAddr',
 					descriptor_sets: 'StdVectorAddr',
@@ -463,26 +457,6 @@ export default class Renderers
 
 			static original_struct_offsets =
 				this.getOriginalStructOffsets('RDTY::WRAPPERS::object_offsets');
-
-
-
-			// updateData (name, _data)
-			// {
-			// 	// TODO: cache this
-			// 	const addr = this.getMemberAddr(name);
-
-			// 	wasm_wrapper.updateStdVectorData(addr, _data);
-			// }
-
-			// updateIndexData (_data)
-			// {
-			// 	const offset =
-			// 		this.constructor.original_struct_offsets
-			// 			[Object.keys(this.constructor.original_struct_descriptor).indexOf('index_data')];
-
-			// 	wasm_wrapper.exports.RDTY_WASM_WRAPPER_StdVector_resize(this.addr + offset, _data.length);
-			// 	wasm_wrapper.StdVectorUint32(this.addr + offset).set(_data);
-			// }
 		}
 
 		this.ObjectBase = ObjectBase;
