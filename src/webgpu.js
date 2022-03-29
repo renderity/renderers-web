@@ -588,7 +588,7 @@ const getWebgpu =
 						static ShaderUsage =
 							{
 								SPIRV: 0,
-								GLSL_VULKAN: 1,
+								GLSL: 1,
 								WGSL: 2,
 							};
 
@@ -699,7 +699,7 @@ const getWebgpu =
 									break;
 								}
 
-								case Material.ShaderUsage.GLSL_VULKAN:
+								case Material.ShaderUsage.GLSL:
 								{
 									{
 										const code_glsl =
@@ -861,7 +861,7 @@ const getWebgpu =
 									break;
 								}
 
-								case Material.ShaderUsage.GLSL_VULKAN:
+								case Material.ShaderUsage.GLSL:
 								{
 									const code_glsl =
 										WasmWrapper.convertUint8ArrayToDomString
