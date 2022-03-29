@@ -68,6 +68,11 @@ export default class Renderers
 				return this.instances_base[addr];
 			}
 
+			static getInstance2 (name, ...args)
+			{
+				return this.getInstance(wasm_wrapper.Addr2(name)[0], ...args);
+			}
+
 			static getOriginalStructOffsets (name)
 			{
 				const orignial_struct_members = Object.keys(this.original_struct_descriptor);
