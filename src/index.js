@@ -20,8 +20,67 @@ export default class Renderers
 			static instances_base = null;
 			static instances = null;
 
-			static getInstance (addr, ...args)
+			// static getInstance (addr, ...args)
+			// {
+			// 	const base = renderers[`${ this.name }Base`.replace('_', '')];
+
+			// 	if (base)
+			// 	{
+			// 		if (!this.instances)
+			// 		{
+			// 			this.instances = {};
+			// 		}
+
+			// 		if (!this.instances[addr])
+			// 		{
+			// 			Object.defineProperty
+			// 			(
+			// 				this.instances,
+
+			// 				addr,
+
+			// 				{ value: new this(base?.instances_base?.[addr] || addr, ...args) },
+			// 			);
+			// 		}
+
+			// 		return this.instances[addr];
+			// 	}
+
+
+
+			// 	if (!this.instances_base)
+			// 	{
+			// 		this.instances_base = {};
+			// 	}
+
+			// 	if (!this.instances_base[addr])
+			// 	{
+			// 		Object.defineProperty
+			// 		(
+			// 			this.instances_base,
+
+			// 			addr,
+
+			// 			{ value: new this(addr, ...args) },
+			// 		);
+			// 	}
+
+			// 	return this.instances_base[addr];
+			// }
+
+			static getInstance (input, ...args)
 			{
+				let addr = null;
+
+				if (typeof input === 'number')
+				{
+					addr = input;
+				}
+				else if (typeof input === 'string')
+				{
+					[ addr ] = wasm_wrapper.Addr2(input);
+				}
+
 				const base = renderers[`${ this.name }Base`.replace('_', '')];
 
 				if (base)
@@ -68,10 +127,10 @@ export default class Renderers
 				return this.instances_base[addr];
 			}
 
-			static getInstance2 (name, ...args)
-			{
-				return this.getInstance(wasm_wrapper.Addr2(name)[0], ...args);
-			}
+			// static getInstance2 (name, ...args)
+			// {
+			// 	return this.getInstance(wasm_wrapper.Addr2(name)[0], ...args);
+			// }
 
 			static getOriginalStructOffsets (name)
 			{
@@ -93,10 +152,30 @@ export default class Renderers
 
 			constructor (input)
 			{
+				// // input is addres
+				// if (typeof input === 'number')
+				// {
+				// 	this.addr = input;
+
+				// 	this.original_struct = this.getOriginalStruct();
+				// }
+				// // input is base object
+				// else
+				// {
+				// 	Object.assign(this, input);
+				// }
+
 				// input is addres
 				if (typeof input === 'number')
 				{
 					this.addr = input;
+
+					this.original_struct = this.getOriginalStruct();
+				}
+				// input is global name
+				else if (typeof input === 'string')
+				{
+					[ this.addr ] = wasm_wrapper.Addr2(input);
 
 					this.original_struct = this.getOriginalStruct();
 				}
@@ -453,6 +532,7 @@ export default class Renderers
 					scene_position_data_offset: 'Size',
 					scene_position_data_length: 'Size',
 					position_data: 'StdVectorFloat',
+					normal_data: 'StdVectorFloat',
 					scene_index_data_offset: 'Size',
 					scene_index_data_length: 'Size',
 					index_data: 'StdVectorUint32',
@@ -473,6 +553,7 @@ export default class Renderers
 			static original_struct_descriptor =
 				{
 					position_data: 'StdVectorFloat',
+					normal_data: 'StdVectorFloat',
 					index_data: 'StdVectorUint32',
 					objects: 'StdVectorAddr',
 					boxes: [ 'Uint32', 1024 * 1024 * 8 ],

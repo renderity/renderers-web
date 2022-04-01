@@ -1023,6 +1023,31 @@ const getWebgpu =
 
 
 
+							this.normal_buffer =
+								renderer.device.createBuffer
+								({
+									size: this.original_struct.normal_data.byteLength,
+
+									usage:
+									(
+										window.GPUBufferUsage.COPY_DST |
+										window.GPUBufferUsage.VERTEX
+									),
+								});
+
+							renderer.gpu_resources.push(this.normal_buffer);
+
+							renderer.device.queue.writeBuffer
+							(
+								this.normal_buffer,
+								0,
+								this.original_struct.normal_data,
+								0,
+								this.original_struct.normal_data.length,
+							);
+
+
+
 							this.index_buffer =
 								renderer.device.createBuffer
 								({
