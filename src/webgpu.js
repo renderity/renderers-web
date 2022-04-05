@@ -953,9 +953,9 @@ const getWebgpu =
 						{
 							renderer.render_pass_encoder.draw
 							(
-								this.original_struct.scene_position_data_length[0],
+								this.original_struct.scene_vertex_data_length[0],
 								1,
-								this.original_struct.scene_position_data_offset[0],
+								this.original_struct.scene_vertex_data_offset[0],
 								0,
 							);
 						}
@@ -1137,12 +1137,14 @@ const getWebgpu =
 						makeDescriptorSet (bindings = [])
 						{
 							this.position_storage_block = new StorageBlock3(this.original_struct.position_data, 0);
+							this.normal_storage_block = new StorageBlock3(this.original_struct.normal_data, 5);
 							this.index_storage_block = new StorageBlock3(this.original_struct.index_data, 2);
 
 							this.descriptor_set =
 								new DescriptorSet2
 								([
 									this.position_storage_block,
+									this.normal_storage_block,
 									this.index_storage_block,
 
 									...bindings,

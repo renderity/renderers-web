@@ -384,7 +384,7 @@ const getWebgl =
 						draw ()
 						{
 							gl.drawArrays
-							(Material.used_instance.topology, this.scene_position_data_offset, this.scene_position_data_length);
+							(Material.used_instance.topology, this.scene_vertex_data_offset, this.scene_vertex_data_length);
 						}
 
 						drawIndexed ()

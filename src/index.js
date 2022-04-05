@@ -70,16 +70,18 @@ export default class Renderers
 
 			static getInstance (input, ...args)
 			{
-				let addr = null;
+				// let addr = null;
 
-				if (typeof input === 'number')
-				{
-					addr = input;
-				}
-				else if (typeof input === 'string')
-				{
-					[ addr ] = wasm_wrapper.Addr2(input);
-				}
+				// if (typeof input === 'number')
+				// {
+				// 	addr = input;
+				// }
+				// else if (typeof input === 'string')
+				// {
+				// 	[ addr ] = wasm_wrapper.Addr2(input);
+				// }
+
+				const addr = input;
 
 				const base = renderers[`${ this.name }Base`.replace('_', '')];
 
@@ -127,10 +129,12 @@ export default class Renderers
 				return this.instances_base[addr];
 			}
 
-			// static getInstance2 (name, ...args)
-			// {
-			// 	return this.getInstance(wasm_wrapper.Addr2(name)[0], ...args);
-			// }
+			// Use for dynamically allocated obejcts to access by pointer
+			// (in C++ terms, since in JS all is allocated dynamically).
+			static getInstance2 (name, ...args)
+			{
+				return this.getInstance(wasm_wrapper.Addr2(name)[0], ...args);
+			}
 
 			static getOriginalStructOffsets (name)
 			{
@@ -529,8 +533,8 @@ export default class Renderers
 		{
 			static original_struct_descriptor =
 				{
-					scene_position_data_offset: 'Size',
-					scene_position_data_length: 'Size',
+					scene_vertex_data_offset: 'Size',
+					scene_vertex_data_length: 'Size',
 					position_data: 'StdVectorFloat',
 					normal_data: 'StdVectorFloat',
 					scene_index_data_offset: 'Size',
