@@ -533,6 +533,7 @@ export default class Renderers
 		{
 			static original_struct_descriptor =
 				{
+					scene_index: 'Size',
 					scene_vertex_data_offset: 'Size',
 					scene_vertex_data_length: 'Size',
 					position_data: 'StdVectorFloat',
@@ -560,8 +561,9 @@ export default class Renderers
 					normal_data: 'StdVectorFloat',
 					index_data: 'StdVectorUint32',
 					objects: 'StdVectorAddr',
-					boxes: [ 'Uint32', 1024 * 1024 * 8 ],
-					triangles: [ 'Uint32', 1024 * 1024 ],
+					// sizeof(Box) == 32
+					boxes: [ 'Uint8', 512 * 512 * 32 ],
+					triangles: [ 'Uint32', 1024 * 1024 * 2 ],
 				};
 
 			static original_struct_offsets =
