@@ -11,6 +11,7 @@ export default class Renderers
 
 		const WasmWrapper = this.wasm_wrapper.constructor;
 
+		/* eslint-disable-next-line consistent-this */
 		const renderers = this;
 
 
@@ -266,8 +267,8 @@ export default class Renderers
 
 
 
-				this.width = this.original_struct.width[0];
-				this.height = this.original_struct.height[0];
+				[ this.width ] = this.original_struct.width;
+				[ this.height ] = this.original_struct.height;
 			}
 
 			appendFpsCounter ()
@@ -412,6 +413,7 @@ export default class Renderers
 					name: 'StdString',
 					_data: 'Addr',
 					size: 'Size',
+					visibility: 'StdVectorSize',
 				};
 
 			static original_struct_offsets =
@@ -427,7 +429,7 @@ export default class Renderers
 
 				this.name = WasmWrapper.convertUint8ArrayToDomString(this.original_struct.name);
 
-				this._data = wasm_wrapper.Uint8(this.original_struct._data, this.original_struct.size[0]);
+				this._data = wasm_wrapper.Uint8(this.original_struct._data[0], this.original_struct.size[0]);
 
 
 
@@ -535,11 +537,11 @@ export default class Renderers
 				{
 					scene_index: 'Size',
 					scene_vertex_data_offset: 'Size',
-					scene_vertex_data_length: 'Size',
+					scene_vertex_data_size: 'Size',
 					position_data: 'StdVectorFloat',
 					normal_data: 'StdVectorFloat',
 					scene_index_data_offset: 'Size',
-					scene_index_data_length: 'Size',
+					scene_index_data_size: 'Size',
 					index_data: 'StdVectorUint32',
 					bounding_box_min: [ 'Float', 3 ],
 					bounding_box_max: [ 'Float', 3 ],
