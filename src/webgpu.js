@@ -1178,7 +1178,9 @@ const getWebgpu =
 
 					if (!this.render_format)
 					{
-						this.render_format = this._context.getPreferredFormat(this.adapter);
+						// this.render_format = this._context.getPreferredFormat(this.adapter);
+
+						this.render_format = global.navigator.gpu.getPreferredCanvasFormat();
 					}
 
 					this._context.configure
@@ -1186,17 +1188,17 @@ const getWebgpu =
 						device: this.device,
 						format: this.render_format,
 						usage: global.GPUTextureUsage.RENDER_ATTACHMENT,
-						compositingAlphaMode: 'premultiplied',
+						alphaMode: 'premultiplied',
 						colorSpace: 'srgb',
 						// GPUPredefinedColorSpace colorSpace = "srgb";
 						// GPUCanvasCompositingAlphaMode compositingAlphaMode = "opaque";
 
-						size:
-						{
-							width: this.original_struct.width[0],
-							height: this.original_struct.height[0],
-							depthOrArrayLayers: 1,
-						},
+						// size:
+						// {
+						// 	width: this.original_struct.width[0],
+						// 	height: this.original_struct.height[0],
+						// 	depthOrArrayLayers: 1,
+						// },
 						// size: [ 800, 600 ],
 					});
 
